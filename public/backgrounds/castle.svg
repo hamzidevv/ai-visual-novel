@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 768">
+  <!-- Sky -->
+  <rect width="1024" height="768" fill="#2c3e50"/>
+  
+  <!-- Moon -->
+  <circle cx="800" cy="150" r="60" fill="#ecf0f1"/>
+  <circle cx="820" cy="130" r="15" fill="#2c3e50"/>
+  <circle cx="780" cy="180" r="10" fill="#2c3e50"/>
+  
+  <!-- Distant mountains -->
+  <path d="M0 350 L100 250 L200 300 L300 200 L400 280 L500 200 L600 280 L700 220 L800 300 L900 240 L1024 320 L1024 768 L0 768 Z" fill="#2c3e50"/>
+  
+  <!-- Castle silhouette -->
+  <path d="M100 400 L100 600 L200 600 L200 500 L250 500 L250 600 L350 600 L350 400 L380 360 L410 400 L410 480 L450 480 L450 400 L480 360 L510 400 L510 600 L610 600 L610 500 L660 500 L660 600 L760 600 L760 400 L790 360 L820 400 L820 480 L860 480 L860 400 L890 360 L920 400 L920 600 L1024 600 L1024 768 L0 768 L0 600 Z" fill="#34495e"/>
+  
+  <!-- Castle towers with details -->
+  <!-- Left tower -->
+  <rect x="120" y="300" width="60" height="100" fill="#34495e"/>
+  <rect x="130" y="280" width="40" height="20" fill="#34495e"/>
+  <rect x="140" y="260" width="20" height="20" fill="#34495e"/>
+  
+  <!-- Center-left tower -->
+  <rect x="370" y="280" width="40" height="120" fill="#34495e"/>
+  <rect x="375" y="260" width="30" height="20" fill="#34495e"/>
+  
+  <!-- Center-right tower -->
+  <rect x="480" y="280" width="40" height="120" fill="#34495e"/>
+  <rect x="485" y="260" width="30" height="20" fill="#34495e"/>
+  
+  <!-- Right tower -->
+  <rect x="780" y="280" width="40" height="120" fill="#34495e"/>
+  <rect x="785" y="260" width="30" height="20" fill="#34495e"/>
+  
+  <!-- Far-right tower -->
+  <rect x="890" y="280" width="40" height="120" fill="#34495e"/>
+  <rect x="895" y="260" width="30" height="20" fill="#34495e"/>
+  
+  <!-- Windows and details -->
+  <g fill="#ecf0f1" opacity="0.7">
+    <!-- Left tower windows -->
+    <rect x="135" y="320" width="10" height="15"/>
+    <rect x="155" y="320" width="10" height="15"/>
+    <rect x="135" y="350" width="10" height="15"/>
+    <rect x="155" y="350" width="10" height="15"/>
+    
+    <!-- Center windows -->
+    <rect x="220" y="520" width="10" height="15"/>
+    <rect x="240" y="520" width="10" height="15"/>
+    <rect x="530" y="520" width="10" height="15"/>
+    <rect x="550" y="520" width="10" height="15"/>
+    <rect x="680" y="520" width="10" height="15"/>
+    <rect x="700" y="520" width="10" height="15"/>
+    
+    <!-- Main gate -->
+    <path d="M400 550 Q 450 500, 500 550 L500 600 L400 600 Z"/>
+  </g>
+  
+  <!-- Foreground -->
+  <rect x="0" y="600" width="1024" height="168" fill="#2c3e50"/>
+  
+  <!-- Flags -->
+  <rect x="140" y="240" width="20" height="20" fill="#e74c3c"/>
+  <rect x="375" y="240" width="30" height="20" fill="#3498db"/>
+  <rect x="485" y="240" width="30" height="20" fill="#e74c3c"/>
+  <rect x="785" y="240" width="30" height="20" fill="#3498db"/>
+  <rect x="895" y="240" width="30" height="20" fill="#e74c3c"/>
+  
+  <!-- Stars in sky -->
+  <g fill="#ecf0f1">
+    <circle cx="100" cy="100" r="2"/>
+    <circle cx="200" cy="150" r="1.5"/>
+    <circle cx="300" cy="80" r="2"/>
+    <circle cx="400" cy="120" r="1.5"/>
+    <circle cx="500" cy="90" r="2"/>
+    <circle cx="600" cy="130" r="1.5"/>
+    <circle cx="700" cy="70" r="2"/>
+    <circle cx="900" cy="110" r="1.5"/>
+    <circle cx="950" cy="80" r="2"/>
+    <circle cx="150" cy="200" r="1.5"/>
+    <circle cx="250" cy="180" r="2"/>
+    <circle cx="350" cy="220" r="1.5"/>
+    <circle cx="450" cy="190" r="2"/>
+    <circle cx="550" cy="230" r="1.5"/>
+    <circle cx="650" cy="170" r="2"/>
+    <circle cx="750" cy="210" r="1.5"/>
+    <circle cx="850" cy="180" r="2"/>
+    <circle cx="950" cy="220" r="1.5"/>
+  </g>
+</svg>

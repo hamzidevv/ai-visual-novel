@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 768">
+  <!-- Sky -->
+  <rect width="1024" height="768" fill="#4a6fa5"/>
+  
+  <!-- Sun -->
+  <circle cx="800" cy="150" r="80" fill="#f9d71c"/>
+  
+  <!-- Mountains in background -->
+  <path d="M0 400 L200 200 L400 350 L600 180 L800 300 L1024 250 L1024 768 L0 768 Z" fill="#355070"/>
+  
+  <!-- Hills in middle -->
+  <path d="M0 450 Q 200 380, 400 450 T 800 430 T 1024 460 L1024 768 L0 768 Z" fill="#466d1d"/>
+  
+  <!-- Forest floor -->
+  <rect x="0" y="520" width="1024" height="248" fill="#2f4210"/>
+  
+  <!-- Trees -->
+  <!-- Large tree 1 -->
+  <rect x="100" y="400" width="30" height="120" fill="#5e3b0f"/>
+  <path d="M115 250 L60 400 L170 400 Z" fill="#2e5c16"/>
+  <path d="M115 300 L70 420 L160 420 Z" fill="#2e5c16"/>
+  
+  <!-- Large tree 2 -->
+  <rect x="700" y="420" width="30" height="100" fill="#5e3b0f"/>
+  <path d="M715 300 L660 420 L770 420 Z" fill="#2e5c16"/>
+  <path d="M715 350 L670 440 L760 440 Z" fill="#2e5c16"/>
+  
+  <!-- Small trees -->
+  <g fill="#2e5c16">
+    <path d="M200 480 L170 530 L230 530 Z"/>
+    <path d="M250 500 L230 540 L270 540 Z"/>
+    <path d="M400 470 L370 520 L430 520 Z"/>
+    <path d="M500 490 L470 540 L530 540 Z"/>
+    <path d="M600 480 L570 530 L630 530 Z"/>
+    <path d="M800 500 L770 550 L830 550 Z"/>
+    <path d="M900 485 L870 535 L930 535 Z"/>
+  </g>
+  
+  <!-- Light rays -->
+  <g fill="#f9e090" opacity="0.2">
+    <path d="M800 150 L750 768 L770 768 Z"/>
+    <path d="M800 150 L830 768 L850 768 Z"/>
+    <path d="M800 150 L650 768 L670 768 Z"/>
+    <path d="M800 150 L900 768 L920 768 Z"/>
+  </g>
+</svg>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600">
+  <!-- Character base -->
+  <g id="character">
+    <!-- Head -->
+    <circle cx="200" cy="150" r="80" fill="#ffdbac"/>
+    
+    <!-- Hair -->
+    <path d="M150 100 Q 200 50, 250 100 Q 275 110, 280 130 Q 260 140, 260 180 Q 240 140, 200 130 Q 160 140, 140 180 Q 140 140, 120 130 Q 125 110, 150 100" fill="#5e3719"/>
+    
+    <!-- Eyes -->
+    <g id="eyes">
+      <ellipse cx="170" cy="140" rx="12" ry="8" fill="white"/>
+      <ellipse cx="230" cy="140" rx="12" ry="8" fill="white"/>
+      <circle cx="170" cy="140" r="5" fill="#3e4347"/>
+      <circle cx="230" cy="140" r="5" fill="#3e4347"/>
+      <circle cx="173" cy="138" r="2" fill="white"/>
+      <circle cx="233" cy="138" r="2" fill="white"/>
+    </g>
+    
+    <!-- Eyebrows -->
+    <path d="M158 125 Q 170 118, 182 125" fill="none" stroke="#5e3719" stroke-width="3" stroke-linecap="round"/>
+    <path d="M218 125 Q 230 118, 242 125" fill="none" stroke="#5e3719" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Mouth -->
+    <path d="M185 180 Q 200 190, 215 180" fill="none" stroke="#bd8e7e" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Nose -->
+    <path d="M200 150 Q 195 165, 200 170" fill="none" stroke="#e0b69f" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Body -->
+    <path d="M160 220 Q 200 210, 240 220 L250 420 Q 200 440, 150 420 Z" fill="#3f72af"/>
+    
+    <!-- Arms -->
+    <path d="M160 230 L120 340 Q 110 360, 130 370 Q 150 380, 150 350 L180 260" fill="#3f72af"/>
+    <path d="M240 230 L280 340 Q 290 360, 270 370 Q 250 380, 250 350 L220 260" fill="#3f72af"/>
+    
+    <!-- Hands -->
+    <circle cx="130" cy="370" r="15" fill="#ffdbac"/>
+    <circle cx="270" cy="370" r="15" fill="#ffdbac"/>
+    
+    <!-- Legs -->
+    <path d="M150 420 L130 550 Q 125 580, 150 590 Q 175 595, 170 550 L180 420" fill="#303841"/>
+    <path d="M250 420 L270 550 Q 275 580, 250 590 Q 225 595, 230 550 L220 420" fill="#303841"/>
+    
+    <!-- Shoes -->
+    <ellipse cx="150" cy="590" rx="30" ry="10" fill="#222831"/>
+    <ellipse cx="250" cy="590" rx="30" ry="10" fill="#222831"/>
+    
+    <!-- Neck -->
+    <path d="M185 210 L215 210 L210 230 L190 230 Z" fill="#ffdbac"/>
+  </g>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600">
+  <!-- Character base -->
+  <g id="character">
+    <!-- Head -->
+    <circle cx="200" cy="150" r="80" fill="#ffdbac"/>
+    
+    <!-- Hair -->
+    <path d="M150 100 Q 200 50, 250 100 Q 275 110, 280 130 Q 260 140, 260 180 Q 240 140, 200 130 Q 160 140, 140 180 Q 140 140, 120 130 Q 125 110, 150 100" fill="#5e3719"/>
+    
+    <!-- Eyes (droopy) -->
+    <g id="eyes">
+      <ellipse cx="170" cy="145" rx="12" ry="8" fill="white"/>
+      <ellipse cx="230" cy="145" rx="12" ry="8" fill="white"/>
+      <circle cx="170" cy="145" r="5" fill="#3e4347"/>
+      <circle cx="230" cy="145" r="5" fill="#3e4347"/>
+      <circle cx="173" cy="143" r="2" fill="white"/>
+      <circle cx="233" cy="143" r="2" fill="white"/>
+    </g>
+    
+    <!-- Eyebrows (furrowed) -->
+    <path d="M158 125 Q 170 135, 182 125" fill="none" stroke="#5e3719" stroke-width="3" stroke-linecap="round"/>
+    <path d="M218 125 Q 230 135, 242 125" fill="none" stroke="#5e3719" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Mouth (frown) -->
+    <path d="M185 180 Q 200 170, 215 180" fill="none" stroke="#bd8e7e" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Tear drop -->
+    <path d="M180 155 L175 175" fill="none" stroke="#a6dcef" stroke-width="2" stroke-linecap="round"/>
+    <path d="M175 175 Q 174 180, 177 180" fill="#a6dcef"/>
+    
+    <!-- Nose -->
+    <path d="M200 150 Q 195 165, 200 170" fill="none" stroke="#e0b69f" stroke-width="3" stroke-linecap="round"/>
+    
+    <!-- Body (slightly slouched) -->
+    <path d="M160 220 Q 200 215, 240 220 L245 420 Q 200 435, 155 420 Z" fill="#3f72af"/>
+    
+    <!-- Arms (drooping down) -->
+    <path d="M160 230 L130 310 Q 120 330, 110 360 Q 105 380, 125 385 Q 145 390, 140 360 L160 270" fill="#3f72af"/>
+    <path d="M240 230 L270 310 Q 280 330, 290 360 Q 295 380, 275 385 Q 255 390, 260 360 L240 270" fill="#3f72af"/>
+    
+    <!-- Hands -->
+    <circle cx="125" cy="385" r="15" fill="#ffdbac"/>
+    <circle cx="275" cy="385" r="15" fill="#ffdbac"/>
+    
+    <!-- Legs (close together) -->
+    <path d="M155 420 L150 550 Q 145 580, 170 590 Q 195 595, 180 550 L175 420" fill="#303841"/>
+    <path d="M245 420 L250 550 Q 255 580, 230 590 Q 205 595, 220 550 L225 420" fill="#303841"/>
+    
+    <!-- Shoes -->
+    <ellipse cx="170" cy="590" rx="30" ry="10" fill="#222831"/>
+    <ellipse cx="230" cy="590" rx="30" ry="10" fill="#222831"/>
+    
+    <!-- Neck -->
+    <path d="M185 210 L215 210 L210 230 L190 230 Z" fill="#ffdbac"/>
+  </g>
+</svg>
