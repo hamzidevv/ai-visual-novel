@@ -21,10 +21,33 @@ export default function InputBox() {
         { narrative: gameState.narrative, scene: gameState.currentScene },
       ]);
 
+      // Log the full API response for debugging
+      // console.log("API Response:", response);
+
+      // Check if we have an emotion property
+      let emotion = "default";
+      if (response.emotion) {
+        emotion = response.emotion;
+      } else if (response.mood) {
+        // Check alternative property names
+        emotion = response.mood;
+      } else if (response.feeling) {
+        emotion = response.feeling;
+      }
+
+      // Force a meaningful emotion change for testing
+      if (userInput.toLowerCase().includes("happy")) {
+        emotion = "happy";
+      } else if (userInput.toLowerCase().includes("sad")) {
+        emotion = "sad";
+      }
+
+
+      // Update game state with the new information
       updateGameState({
         narrative: response.narrative,
         currentScene: response.scene || gameState.currentScene,
-        character: response.emotion || "default", 
+        character: emotion,
         loading: false,
         timestamp: new Date().getTime(),
       });
@@ -38,7 +61,7 @@ export default function InputBox() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-[90%] mx-auto mt-4">
+    <form onSubmit={handleSubmit} className="flex w-[90%] mx-auto mt-4 mb-4">
       <input
         type="text"
         value={userInput}
@@ -54,6 +77,11 @@ export default function InputBox() {
       >
         {gameState.loading ? "Thinking..." : "Send"}
       </button>
+
+      {/* Add a small debugging display showing the current character state */}
+      <div className="ml-2 text-xs text-gray-300 self-center">
+        Character: {gameState.character || "default"}
+      </div>
     </form>
   );
 }

@@ -56,12 +56,10 @@ export default function GameBackground() {
         const lastNarrative =
           gameState.narrative || "A scene in a visual novel";
 
-        // Combine scene name and narrative for a rich prompt
         const prompt = `${sceneDescription} scene: ${lastNarrative.slice(
           0,
           100
         )}`;
-        console.log("Generating image for prompt:", prompt);
 
         const result = await generateImage(prompt);
 

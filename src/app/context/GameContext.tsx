@@ -1,11 +1,18 @@
 // File: context/game-context.tsx
 "use client";
 
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
 
 interface GameHistory {
   narrative: string;
   scene: string;
+  character?: string; // Add character to history
 }
 
 interface GameState {
@@ -14,6 +21,7 @@ interface GameState {
   narrative: string;
   history: GameHistory[];
   loading: boolean;
+  timestamp?: number; // Timestamp to force updates
 }
 
 interface GameContextType {
@@ -38,18 +46,40 @@ export function GameProvider({ children }: GameProviderProps) {
     loading: false,
   });
 
+  // Debug logging of state changes
+  // useEffect(() => {
+  //   console.log("Game state updated:", gameState);
+  // }, [gameState]);
+
   const updateGameState = (newState: Partial<GameState>) => {
-    setGameState((prevState) => ({
-      ...prevState,
-      ...newState,
-      history: [
-        ...prevState.history,
-        {
-          narrative: prevState.narrative,
-          scene: prevState.currentScene,
-        },
-      ],
-    }));
+
+    setGameState((prevState) => {
+      // Extract the character from newState or use the previous one
+      const updatedCharacter =
+        newState.character !== undefined
+          ? newState.character
+          : prevState.character;
+
+
+      // Create the new state
+      const updatedState = {
+        ...prevState,
+        ...newState,
+        character: updatedCharacter, // Ensure character is explicitly set
+        // Add timestamp if not provided to force re-renders
+        timestamp: newState.timestamp || Date.now(),
+        history: [
+          ...prevState.history,
+          {
+            narrative: prevState.narrative,
+            scene: prevState.currentScene,
+            character: prevState.character, // Include character in history
+          },
+        ],
+      };
+
+      return updatedState;
+    });
   };
 
   return (
