@@ -1,18 +1,13 @@
 // File: context/game-context.tsx
 "use client";
 
-import React, {
-  createContext,
-  useState,
-  useContext,
-  ReactNode,
-  useEffect,
-} from "react";
+import React, { createContext, useState, useContext, ReactNode } from "react";
 
 interface GameHistory {
   narrative: string;
   scene: string;
-  character?: string; // Add character to history
+  character?: string;
+  chapter?: number;
 }
 
 interface GameState {
@@ -21,7 +16,10 @@ interface GameState {
   narrative: string;
   history: GameHistory[];
   loading: boolean;
-  timestamp?: number; // Timestamp to force updates
+  timestamp?: number;
+  chapter: number;
+  isNewChapter: boolean;
+  chapterTitle?: string;
 }
 
 interface GameContextType {
@@ -44,28 +42,46 @@ export function GameProvider({ children }: GameProviderProps) {
       "You're lost in a green forest. The trees tower above you, and sunlight filters through the leaves.",
     history: [],
     loading: false,
+    chapter: 1,
+    isNewChapter: true,
+    chapterTitle: "Chapter 1: Lost in the Woods",
   });
 
-  // Debug logging of state changes
-  // useEffect(() => {
-  //   console.log("Game state updated:", gameState);
-  // }, [gameState]);
-
   const updateGameState = (newState: Partial<GameState>) => {
-
     setGameState((prevState) => {
-      // Extract the character from newState or use the previous one
-      const updatedCharacter =
-        newState.character !== undefined
-          ? newState.character
-          : prevState.character;
+      // Extract the chapter from newState or use the previous one
+      const updatedChapter =
+        newState.chapter !== undefined ? newState.chapter : prevState.chapter;
 
+      // Check if this is a new chapter
+      const isNewChapter = newState.isNewChapter || false;
+
+      // Extract chapter title from narrative if it's a new chapter
+      let chapterTitle = prevState.chapterTitle;
+
+      // For new chapters, try to extract chapter title from narrative
+      if (isNewChapter && newState.narrative) {
+        const narrative = newState.narrative;
+        const chapterMatch = narrative.match(/Chapter \d+:([^\.]+)/i);
+        if (chapterMatch && chapterMatch[1]) {
+          chapterTitle = `Chapter ${updatedChapter}: ${chapterMatch[1].trim()}`;
+
+          // Remove the chapter title from the narrative to avoid duplication
+          newState.narrative = narrative
+            .replace(/Chapter \d+:[^\.]+\./i, "")
+            .trim();
+        } else {
+          chapterTitle = `Chapter ${updatedChapter}`;
+        }
+      }
 
       // Create the new state
       const updatedState = {
         ...prevState,
         ...newState,
-        character: updatedCharacter, // Ensure character is explicitly set
+        chapter: updatedChapter,
+        isNewChapter: isNewChapter,
+        chapterTitle: chapterTitle,
         // Add timestamp if not provided to force re-renders
         timestamp: newState.timestamp || Date.now(),
         history: [
@@ -73,7 +89,8 @@ export function GameProvider({ children }: GameProviderProps) {
           {
             narrative: prevState.narrative,
             scene: prevState.currentScene,
-            character: prevState.character, // Include character in history
+            character: prevState.character,
+            chapter: prevState.chapter,
           },
         ],
       };

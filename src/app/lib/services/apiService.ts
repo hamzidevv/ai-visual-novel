@@ -1,11 +1,4 @@
-// File: app/lib/services/apiService.ts
-
-/**
- * Analyzes text to determine an appropriate emotion
- * @param text The text to analyze
- * @returns An emotion string (happy, sad, or default)
- */
-function analyzeEmotionFromText(text) {
+function analyzeEmotionFromText(text: string) {
   const lowerText = text.toLowerCase();
 
   // Happy emotion keywords
@@ -88,24 +81,17 @@ function analyzeEmotionFromText(text) {
   }
 }
 
-/**
- * Generates narrative text based on user input and game history
- */
-export async function generateNarrative(userInput: string, gameHistory: any[]) {
+export async function generateNarrative(userInput: string, gameHistory: any[], currentChapter: number = 1) {
   try {
-    // First, do a preliminary emotion analysis on the user input
-    // This can guide the API about what emotion might be appropriate
-    const inputEmotion = analyzeEmotionFromText(userInput);
-
     // Include a hint for the API to return emotion data
     const requestBody = {
       userInput,
       gameHistory,
+      currentChapter,
       includeEmotion: true,
-      emotionSuggestion: inputEmotion, // Add a suggestion based on input
     };
-
-
+    
+    
     const response = await fetch("/api/generate-narrative", {
       method: "POST",
       headers: {
@@ -119,20 +105,37 @@ export async function generateNarrative(userInput: string, gameHistory: any[]) {
     }
 
     const data = await response.json();
-
-    // If the API doesn't provide an emotion or returns "default", analyze the narrative
-    if (!data.emotion || data.emotion === "default") {
-     
-      data.emotion = analyzeEmotionFromText(data.narrative);
+    
+    if (!data.emotion) {
+      const narrative = data.narrative?.toLowerCase() || "";
+      if (
+        narrative.includes("happy") || 
+        narrative.includes("smile") || 
+        narrative.includes("laugh") || 
+        narrative.includes("joy")
+      ) {
+        data.emotion = "happy";
+      } else if (
+        narrative.includes("sad") || 
+        narrative.includes("frown") || 
+        narrative.includes("tear") || 
+        narrative.includes("cry")
+      ) {
+        data.emotion = "sad";
+      } else {
+        data.emotion = "default";
+      }
     }
-
-    // Test emotions with keyword overrides (for debugging)
-    if (userInput.toLowerCase().includes("happy")) {
-      data.emotion = "happy";
-    } else if (userInput.toLowerCase().includes("sad")) {
-      data.emotion = "sad";
+    
+    // Ensure chapter data is included
+    if (!data.chapter) {
+      data.chapter = currentChapter;
     }
-
+    
+    if (data.isNewChapter === undefined) {
+      data.isNewChapter = false;
+    }
+    
     return data;
   } catch (error) {
     console.error("Error generating narrative:", error);
@@ -141,6 +144,8 @@ export async function generateNarrative(userInput: string, gameHistory: any[]) {
       narrative: "Something went wrong with the story generation.",
       scene: gameHistory[gameHistory.length - 1]?.scene || "forest",
       emotion: "default", // Always provide a default emotion
+      chapter: currentChapter,
+      isNewChapter: false
     };
   }
 }
