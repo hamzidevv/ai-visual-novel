@@ -87,10 +87,7 @@ npm run dev
 - `GEMINI_API_KEY` - Your Google Gemini API key
 - `HUGGINGFACE_API_KEY` - Your Hugging Face API key
 
-## Here are my keys for the testing:
 
-- `GEMINI_API_KEY` AIzaSyCwL7Wtk8wPI6KNbHU4Jl95Oy8Xmow04EI
-- `HUGGINGFACE_API_KEY` - hf_LvNdGMvDjVcpJouGhlOeqREYntAywQwb
 
 ## Acknowledgments
 
