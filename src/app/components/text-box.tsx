@@ -77,12 +77,12 @@ export default function TextBox() {
       {/* Text Box */}
       <div className="absolute bottom-1 left-1/2 transform  -translate-x-1/2 w-[calc(100%-20px)] max-w-3xl z-10">
         <div
-          className="bg-slate-900 bg-opacity-85 rounded-lg p-4 shadow-lg border border-slate-700"
+          className="bg-[#242442]  bg-opacity-85 rounded-lg p-4 shadow-lg border border-slate-700"
           onClick={handleSkip}
         >
           {/* Character name */}
-          <div className="text-blue-300 font-bold mb-1 text-lg">
-            {gameState.character !== "default"
+          <div className="bg-gradient-to-r from-[#6A5ACD] to-[#FF69B4] bg-clip-text text-transparent font-bold mb-1 text-lg">
+          {gameState.character !== "default"
               ? gameState.character.charAt(0).toUpperCase() +
                 gameState.character.slice(1)
               : "Narrator"}
