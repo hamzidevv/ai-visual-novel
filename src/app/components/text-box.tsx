@@ -6,32 +6,29 @@ import { useGameState } from "@/app/context/GameContext";
 export default function TextBox() {
   const { gameState } = useGameState();
   const [displayedText, setDisplayedText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const [showChapterTransition, setShowChapterTransition] = useState(false);
 
   // Clean up narrative text before displaying
-  const cleanNarrativeText = (text:string) => {
+  const cleanNarrativeText = (text) => {
     if (!text) return "";
 
     // Fix common text issues:
-
-    // 1. Remove emotion name if it appears at start of narrative
     let cleaned = text.trim();
     const emotions = ["happy", "sad", "default"];
 
-    // Check for emotions at the start (case insensitive)
+    // Remove emotion name if it appears at start of narrative
     for (const emotion of emotions) {
       const regex = new RegExp(`^${emotion}\\s+`, "i");
       cleaned = cleaned.replace(regex, "");
     }
 
-    // 2. Fix lowercase first letter after emotion removal
+    // Capitalize the first letter
     if (cleaned.length > 0) {
       cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
     }
 
-    // 3. Fix missing spaces after punctuation
-    cleaned = cleaned.replace(/([.!?])([A-Za-z])/g, "$1 $2");
+    // Fix missing spaces after punctuation
+    cleaned = cleaned.replace(/([.!?])\s*(\w)/g, "$1 $2");
 
     return cleaned;
   };
@@ -39,50 +36,27 @@ export default function TextBox() {
   // Handle chapter transitions
   useEffect(() => {
     if (gameState.isNewChapter) {
-      // Show chapter transition effect
       setShowChapterTransition(true);
-
-      // Hide it after animation completes
       const timer = setTimeout(() => {
         setShowChapterTransition(false);
       }, 3000);
-
       return () => clearTimeout(timer);
     }
   }, [gameState.chapter, gameState.isNewChapter]);
 
-  // Typing effect for narrative text
+  // Set displayed text directly without typing effect
   useEffect(() => {
-    if (!gameState.narrative) return;
-
-    // Clean the narrative text
-    const cleanedNarrative = cleanNarrativeText(gameState.narrative);
-
-    // Reset the display text
-    setDisplayedText("");
-    setIsTyping(true);
-
-    // Type out text character by character
-    let i = 0;
-    const typingInterval = setInterval(() => {
-      if (i < cleanedNarrative.length) {
-        setDisplayedText((prev) => prev + cleanedNarrative.charAt(i));
-        i++;
-      } else {
-        clearInterval(typingInterval);
-        setIsTyping(false);
-      }
-    }, 15); // Speed of typing
-
-    return () => clearInterval(typingInterval);
+    if (gameState.narrative) {
+      const cleanedNarrative = cleanNarrativeText(gameState.narrative);
+      setDisplayedText(cleanedNarrative);
+    }
   }, [gameState.narrative]);
 
   // Handle click to skip typing animation
   const handleSkip = () => {
-    if (isTyping && gameState.narrative) {
+    if (gameState.narrative) {
       const cleanedNarrative = cleanNarrativeText(gameState.narrative);
       setDisplayedText(cleanedNarrative);
-      setIsTyping(false);
     }
   };
 
@@ -100,12 +74,8 @@ export default function TextBox() {
         </div>
       )}
 
-      <div className="absolute left-64 top-4 w-[calc(100%-280px)] max-w-[700px] z-10">
-        {/* Chapter indicator */}
-        <div className="text-right text-xs text-blue-300 mb-1">
-          {gameState.chapterTitle || `Chapter ${gameState.chapter}`}
-        </div>
-
+      {/* Text Box */}
+      <div className="absolute bottom-1 left-1/2 transform  -translate-x-1/2 w-[calc(100%-20px)] max-w-3xl z-10">
         <div
           className="bg-slate-900 bg-opacity-85 rounded-lg p-4 shadow-lg border border-slate-700"
           onClick={handleSkip}
@@ -119,17 +89,7 @@ export default function TextBox() {
           </div>
 
           {/* Character dialogue */}
-          <div className="text-white min-h-[80px]">
-            {displayedText}
-            {isTyping && <span className="animate-pulse">|</span>}
-          </div>
-
-          {/* Skip indicator */}
-          {isTyping && (
-            <div className="text-xs text-slate-400 text-right mt-2">
-              Click to skip
-            </div>
-          )}
+          <div className="text-white min-h-[40px]">{displayedText}</div>
         </div>
       </div>
     </>

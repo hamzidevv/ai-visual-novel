@@ -122,7 +122,7 @@ export default function GameBackground() {
   }, [gameState.currentScene, gameState.narrative, gameState.timestamp]);
 
   return (
-    <div className="relative w-full h-[70vh] overflow-hidden bg-slate-800">
+    <div className="relative w-full h-[90vh] overflow-hidden bg-slate-800">
       {loading ? (
         <div className="flex items-center justify-center w-full h-full text-white text-2xl">
           <div className="text-center">

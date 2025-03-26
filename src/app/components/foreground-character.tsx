@@ -78,37 +78,27 @@ export default function ForegroundCharacter() {
   }, [gameState.character]);
 
   return (
-    <div className="absolute top-4 left-4 z-10">
-      <div
-        className="relative bg-slate-900 bg-opacity-70 rounded-lg p-2"
-        style={{ width: "180px", height: "270px" }}
-      >
-        {loading ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <div className="text-white text-sm mb-2">Generating...</div>
-            <div className="w-8 h-8 border-t-2 border-blue-500 border-solid rounded-full animate-spin"></div>
-          </div>
-        ) : (
-          <img
-            src={characterSrc}
-            alt={`Character (${gameState.character || "default"})`}
-            style={{
-              maxWidth: "100%",
-              maxHeight: "100%",
-              objectFit: "contain",
-            }}
-            className="rounded"
-            onError={(e) => {
-              console.error("Image load error");
-              e.target.src = SVG_CHARACTERS[gameState.character || "default"];
-            }}
-          />
-        )}
-
-        {/* <div className="text-xs bg-black bg-opacity-70 text-white p-1 rounded absolute bottom-0 left-1/2 transform -translate-x-1/2">
-          {gameState.character || "default"}
-        </div> */}
-      </div>
+    <div
+      className="relative bg-opacity-70 rounded-lg flex justify-center p-2"
+      style={{ width: "768px", height: "1152px" }}
+    >
+      {loading ? (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-white text-sm mb-2">Generating...</div>
+          <div className="w-8 h-8 border-t-2 border-blue-500 border-solid rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        <img
+          src={characterSrc}
+          alt={`Character (${gameState.character || "default"})`}
+          style={{
+            maxWidth: "100%",
+            maxHeight: "100%",
+            objectFit: "contain",
+          }}
+          className="rounded"
+        />
+      )}
     </div>
   );
 }

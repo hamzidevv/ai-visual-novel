@@ -1,22 +1,26 @@
-// File: app/api/generate-character/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 
 // Leonardo AI API key from environment variables
 const LEONARDO_API_KEY = process.env.LEONARDO_API_KEY;
+// Remove.bg API key from environment variables
+const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY;
 
 // Leonardo model IDs for different character styles
-// These should be replaced with actual Leonardo model IDs from your account
 const LEONARDO_MODELS = {
-  anime: "e316348f-7773-490e-adcd-46757c738eb7", // Anime model ID
-  realistic: "1e7737d7-545e-469f-857f-e4b46eaa151d", // Realistic model ID
-  cartoon: "fc5c416b-b262-44a3-8103-dd252b749178", // Cartoon model ID
+  anime: "e316348f-7773-490e-adcd-46757c738eb7",
+  realistic: "1e7737d7-545e-469f-857f-e4b46eaa151d",
+  cartoon: "fc5c416b-b262-44a3-8103-dd252b749178",
 };
 
 export async function POST(request: NextRequest) {
   try {
     // Parse the request
-    const { prompt, emotion, characterType = "anime" } = await request.json();
+    const {
+      prompt,
+      emotion,
+      characterType = "anime",
+    } = await request.json();
+   let removeBackground = true
 
     // Select the appropriate model ID
     const modelId = LEONARDO_MODELS[characterType] || LEONARDO_MODELS.anime;
@@ -24,18 +28,19 @@ export async function POST(request: NextRequest) {
     // Create emotion-specific prompt
     let characterPrompt;
     if (emotion === "happy") {
-      characterPrompt = `a happy, smiling character with joyful expression, ${characterType} style, high quality, full body portrait, facing forward`;
+      characterPrompt = `Photoreslistic photography: A beautiful happy medieval peasant woman posing flirtatiously in the middle of a bustling medieval fair. She has rosy cheeks, tousled hair, and a playful smile, wearing a simple yet charming linen dress with an apron and a corset. The fair is lively with merchants, performers, and villagers in the background—colorful market stalls, jugglers, and musicians add to the festive atmosphere. Soft natural lighting enhances her warm, inviting expression, with a hint of rustic charm. The style is a mix of romantic realism and fantasy, with rich textures and vibrant colors , unreal engine 5.1`;
     } else if (emotion === "sad") {
       characterPrompt = `a sad, melancholic character with downcast eyes, ${characterType} style, high quality, full body portrait, facing forward`;
     } else {
-      characterPrompt = `a neutral expression character with detailed features, ${characterType} style, high quality, full body portrait, facing forward`;
+      characterPrompt = `Photoreslistic photography: A beautiful medieval peasant woman posing flirtatiously in the middle of a bustling medieval fair. She has rosy cheeks, tousled hair, and a playful smile, wearing a simple yet charming linen dress with an apron and a corset. The fair is lively with merchants, performers, and villagers in the background—colorful market stalls, jugglers, and musicians add to the festive atmosphere. Soft natural lighting enhances her warm, inviting expression, with a hint of rustic charm. The style is a mix of romantic realism and fantasy, with rich textures and vibrant colors , unreal engine 5.1
+
+`;
     }
 
     // Combine with user prompt if provided
     const finalPrompt = prompt
       ? `${prompt}, ${characterPrompt}`
       : characterPrompt;
-
 
     // Create generation request
     const response = await fetch(
@@ -49,11 +54,11 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           prompt: finalPrompt,
           modelId: modelId,
-          width: 512,
-          height: 768,
+          width: 768,
+          height: 1152,
           num_images: 1,
           negative_prompt:
-            "deformed, distorted, disfigured, poor quality, low quality, text, watermark, signature, bad anatomy, bad proportions, duplicate, multiple characters, group",
+            "(((long neck))), (((elongated neck))), (deformed neck), (malformed neck), (twisted neck), (((twisted head))), (((deformed))), (((malformed))), bad art, too long skull, bad eyes, deformed eyes, floating head, missing body, missing head, too many hands, too many arms, (((ugly hands, distorted hands, deformed hands))), (((too many fingers))), ((twisted hand, twisted fingers)), too many feet, ugly toes, twisted feet, too many legs, ugly legs, ugly mouth, deformed face, ugly face, badly generated teeth between opened lips, too much breasts, physically impossible pose, unnatural posture, split image, (asian looking girl), too long body, (((elongated body))), (((chibi))), too pale skin, blue skin, purple skin, ((blushing)), ((red nose:2)), ((big eyes)), hair in the background, environment without outlines, environment without visible lines, (face mask), (too ordered composition), ugly finger tips, too big boobs, unreal gun, ugly gun, misformed gun",
           promptMagic: true,
         }),
       }
@@ -67,7 +72,6 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
     const generationId = data.sdGenerationJob.generationId;
-
 
     // Poll for the generation to complete
     let imageUrl = null;
@@ -96,7 +100,6 @@ export async function POST(request: NextRequest) {
 
       const statusData = await statusResponse.json();
 
-     
       if (statusData.generations_by_pk?.status === "COMPLETE") {
         if (statusData.generations_by_pk.generated_images.length > 0) {
           imageUrl = statusData.generations_by_pk.generated_images[0].url;
@@ -114,7 +117,7 @@ export async function POST(request: NextRequest) {
       throw new Error("Failed to get image URL after multiple attempts");
     }
 
-    // Download the image and convert to base64
+    // Download the original image
     const imageResponse = await fetch(imageUrl);
 
     if (!imageResponse.ok) {
@@ -122,13 +125,48 @@ export async function POST(request: NextRequest) {
     }
 
     const imageBuffer = await imageResponse.arrayBuffer();
-    const base64Image = Buffer.from(imageBuffer).toString("base64");
+  let base64Image = Buffer.from(imageBuffer).toString("base64");
+
+
+    // Remove background if requested
+    if (removeBackground && REMOVE_BG_API_KEY) {
+      try {
+        const removeBackgroundResponse = await fetch(
+          "https://api.remove.bg/v1.0/removebg",
+          {
+            method: "POST",
+            headers: {
+              "X-Api-Key": REMOVE_BG_API_KEY,
+            },
+            body: new URLSearchParams({
+              image_url: imageUrl, // Using direct URL
+              size: "auto",
+              format: "png",
+            }),
+          }
+        );
+
+
+        if (!removeBackgroundResponse.ok) {
+          console.warn("Background removal failed, using original image");
+        } else {
+          const removeBackgroundBuffer =
+            await removeBackgroundResponse.arrayBuffer();
+          base64Image = `data:image/png;base64,${Buffer.from(
+            removeBackgroundBuffer
+          ).toString("base64")}`;
+        }
+      } catch (bgRemovalError) {
+        console.error("Error in background removal:", bgRemovalError);
+      }
+    }
 
     return NextResponse.json({
       image: base64Image,
       emotion,
       characterType,
       source: "leonardo",
+      backgroundRemoved: removeBackground,
     });
   } catch (error) {
     console.error("Error in character generation:", error);

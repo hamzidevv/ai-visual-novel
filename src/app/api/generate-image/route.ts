@@ -85,7 +85,7 @@ export async function POST(request: Request) {
         try {
           return await generateWithModel(modelId, enhancedPrompt);
         } catch (altError : any) {
-          console.log(`Model ${modelId} failed: ${altError.message}`);
+          // console.log(`Model ${modelId} failed: ${altError.message}`);
         }
       }
 
