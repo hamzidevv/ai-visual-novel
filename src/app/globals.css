@@ -1,28 +1,28 @@
 @import "tailwindcss";
 
 
+
 :root {
+  --background-main: #100b2c; /* Main Dark Background */
+  --background-box: #18142B; /* Box Background */
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
 }
 
 body {
+  background-color: var(--background-main);
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  font-family: var(--font-geist-sans);
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: 600;
+/* Apply box background color to cards/containers */
+.box {
+  background-color: var(--background-box);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* Apply the fantasy font to titles */
+h1, h2, h3 {
+  font-family: var(--font-dancing-script);
 }
 
