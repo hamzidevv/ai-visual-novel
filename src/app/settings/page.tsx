@@ -139,10 +139,7 @@ function SettingsPage() {
       const updatedGameState = {
         ...gameState,
         settings: settings,
-        narrative:
-          gameState.narrative +
-          "\n\n(You've updated your game settings. The world around you subtly shifts to match your preferences.)",
-        timestamp: Date.now(),
+        narrative: gameState.narrative,
       };
       localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
     }
