@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
   try {
     // Parse the request body
     const data = await request.json();
-    console.log("Received data:", data); // Log incoming request
     const { prompt, style = "digital art" } = data;
 
     if (!prompt) {
@@ -21,11 +20,9 @@ export async function POST(request: NextRequest) {
 
     // Create enhanced prompt for background
     const enhancedPrompt = `${prompt}, ${style} style, detailed background scene for a visual novel game, wide shot, scenic view, high quality`;
-    console.log("Enhanced prompt:", enhancedPrompt); // Log the prompt
 
     // Initialize Gemini API
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-    console.log("Gemini API initialized"); // Confirm API setup
 
     // Generate image using Gemini 2.0 Flash
     const response = await ai.models.generateContent({
@@ -35,7 +32,6 @@ export async function POST(request: NextRequest) {
         responseModalities: ["Text", "Image"],
       },
     });
-    console.log("Gemini API response:", response); // Log the response
 
     // Extract base64 image data from response
     let imageBase64;
