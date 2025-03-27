@@ -14,13 +14,13 @@ function GameContainer() {
   const { gameState } = useGameState();
 
   // Ensure the game state is actively loaded
-  useEffect(() => {
-    // You can add any initialization logic here if needed
-    console.log(
-      "Game loaded with settings:",
-      gameState.settings?.universe.type
-    );
-  }, [gameState]);
+  // useEffect(() => {
+  //   // You can add any initialization logic here if needed
+  //   console.log(
+  //     "Game loaded with settings:",
+  //     gameState.settings?.universe.type
+  //   );
+  // }, [gameState]);
 
   return (
     <div className="min-h-screen p-2 flex flex-col justify-center items-center bg-slate-900 text-white relative">

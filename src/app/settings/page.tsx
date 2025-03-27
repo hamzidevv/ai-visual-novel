@@ -79,7 +79,7 @@ const universePresets = [
   },
 ];
 
- function SettingsPage() {
+function SettingsPage() {
   const router = useRouter();
   const { gameState, setGameState, saveCurrentState } = useGameState();
   const [settings, setSettings] = useState<GameSettings>(
@@ -113,43 +113,43 @@ const universePresets = [
   };
 
   // Save settings and start the game
-const handleStartGame = () => {
-  // Save settings to localStorage for redundancy
-  localStorage.setItem("gameSettings", JSON.stringify(settings));
+  const handleStartGame = () => {
+    // Save settings to localStorage for redundancy
+    localStorage.setItem("gameSettings", JSON.stringify(settings));
 
-  if (isNewGame) {
-    // For a new game, create and save a fresh game state
-    const newGameState = {
-      ...initialGameState,
-      settings: settings,
-      currentScene: "forest",
-      character: "default",
-      narrative: `You find yourself in ${
-        settings.universe.description.split(".")[0]
-      }.`,
-      history: [],
-      loading: false,
-      chapter: 1,
-      isNewChapter: true,
-      chapterTitle: "Chapter 1: The Beginning",
-    };
-    localStorage.setItem(GAME_STATE_KEY, JSON.stringify(newGameState));
-  } else {
-    // For an existing game, update and save the current state with new settings
-    const updatedGameState = {
-      ...gameState,
-      settings: settings,
-      narrative:
-        gameState.narrative +
-        "\n\n(You've updated your game settings. The world around you subtly shifts to match your preferences.)",
-      timestamp: Date.now(),
-    };
-    localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
-  }
+    if (isNewGame) {
+      // For a new game, create and save a fresh game state
+      const newGameState = {
+        ...initialGameState,
+        settings: settings,
+        currentScene: "forest",
+        character: "default",
+        narrative: `You find yourself in ${
+          settings.universe.description.split(".")[0]
+        }.`,
+        history: [],
+        loading: false,
+        chapter: 1,
+        isNewChapter: true,
+        chapterTitle: "Chapter 1: The Beginning",
+      };
+      localStorage.setItem(GAME_STATE_KEY, JSON.stringify(newGameState));
+    } else {
+      // For an existing game, update and save the current state with new settings
+      const updatedGameState = {
+        ...gameState,
+        settings: settings,
+        narrative:
+          gameState.narrative +
+          "\n\n(You've updated your game settings. The world around you subtly shifts to match your preferences.)",
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
+    }
 
-  // Redirect to the main game page
-  router.push("/");
-};
+    // Redirect to the main game page
+    router.push("/");
+  };
 
   return (
     <div className="min-h-screen bg-[#1a1a2e] text-[#f0f0f0]">
@@ -246,8 +246,8 @@ const handleStartGame = () => {
                 className="w-full p-3 rounded-lg border border-[#444465] bg-[#2a2a4a] text-white"
                 value={settings.character.gender}
                 onChange={(e) => {
-                  console.log("Previous Gender:", settings.character.gender);
-                  console.log("New Gender:", e.target.value);
+                  // console.log("Previous Gender:", settings.character.gender);
+                  // console.log("New Gender:", e.target.value);
 
                   setSettings({
                     ...settings,

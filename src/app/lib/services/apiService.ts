@@ -256,15 +256,15 @@ export async function generateCharacter(
     // Extract all relevant settings for character generation
     
     const gender = settings?.character?.gender || "Female";
-    console.log("Gender is here",gender)
+    // console.log("Gender is here",gender)
     const universeType = settings?.universe?.type || "fantasy";
     const consistentAppearance =
       settings?.character?.consistentAppearance || true;
     const dynamicClothing = settings?.character?.dynamicClothing || true;
 
-    console.log(
-      `Generating ${gender} ${characterType} character with emotion ${emotion}`
-    );
+    // console.log(
+    //   `Generating ${gender} ${characterType} character with emotion ${emotion}`
+    // );
 
     // Make request to internal API endpoint
     const response = await fetch("/api/generate-character", {

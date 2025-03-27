@@ -41,7 +41,7 @@ export default function ForegroundCharacter() {
       // Get gender from settings - ensure it's available
       const gender = gameState.settings?.character?.gender 
 
-      console.log("ForegroundCharacter - Using gender:", gender);
+      // console.log("ForegroundCharacter - Using gender:", gender);
 
       // Create a cache key that includes settings data for consistent characters
       const cacheKey = gameState.settings?.character?.consistentAppearance
@@ -91,7 +91,7 @@ export default function ForegroundCharacter() {
           setCharacterSrc(imageUrl);
         } else {
           // Fallback to SVG
-          console.log("No image in response, using SVG fallback");
+          // console.log("No image in response, using SVG fallback");
           setCharacterSrc(SVG_CHARACTERS[emotion]);
 
           if (response.error) {
