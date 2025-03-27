@@ -1,3 +1,6 @@
+// Import the GameSettings type from the settings page
+import { GameSettings } from "@/app/settings/page";
+
 function analyzeEmotionFromText(text: string) {
   const lowerText = text.toLowerCase();
 
@@ -70,7 +73,6 @@ function analyzeEmotionFromText(text: string) {
     if (lowerText.includes(keyword)) sadCount++;
   });
 
-
   // Determine emotion based on keyword count
   if (happyCount > sadCount && happyCount > 0) {
     return "happy";
@@ -81,17 +83,30 @@ function analyzeEmotionFromText(text: string) {
   }
 }
 
-export async function generateNarrative(userInput: string, gameHistory: any[], currentChapter: number = 1) {
+export async function generateNarrative(
+  userInput: string,
+  gameHistory: any[],
+  currentChapter: number = 1,
+  settings?: GameSettings
+) {
   try {
+    // Create a rich prompt based on settings if available
+    let enhancedPrompt = userInput;
+
+    if (settings) {
+      // Add context based on the universe settings
+      enhancedPrompt = `[Universe: ${settings.universe.type}] [Mood: ${settings.background.mood}] ${userInput}`;
+    }
+
     // Include a hint for the API to return emotion data
     const requestBody = {
-      userInput,
+      userInput: enhancedPrompt,
       gameHistory,
       currentChapter,
       includeEmotion: true,
+      settings: settings, // Pass settings to the API
     };
-    
-    
+
     const response = await fetch("/api/generate-narrative", {
       method: "POST",
       headers: {
@@ -105,20 +120,20 @@ export async function generateNarrative(userInput: string, gameHistory: any[], c
     }
 
     const data = await response.json();
-    
+
     if (!data.emotion) {
       const narrative = data.narrative?.toLowerCase() || "";
       if (
-        narrative.includes("happy") || 
-        narrative.includes("smile") || 
-        narrative.includes("laugh") || 
+        narrative.includes("happy") ||
+        narrative.includes("smile") ||
+        narrative.includes("laugh") ||
         narrative.includes("joy")
       ) {
         data.emotion = "happy";
       } else if (
-        narrative.includes("sad") || 
-        narrative.includes("frown") || 
-        narrative.includes("tear") || 
+        narrative.includes("sad") ||
+        narrative.includes("frown") ||
+        narrative.includes("tear") ||
         narrative.includes("cry")
       ) {
         data.emotion = "sad";
@@ -126,16 +141,16 @@ export async function generateNarrative(userInput: string, gameHistory: any[], c
         data.emotion = "default";
       }
     }
-    
+
     // Ensure chapter data is included
     if (!data.chapter) {
       data.chapter = currentChapter;
     }
-    
+
     if (data.isNewChapter === undefined) {
       data.isNewChapter = false;
     }
-    
+
     return data;
   } catch (error) {
     console.error("Error generating narrative:", error);
@@ -145,30 +160,83 @@ export async function generateNarrative(userInput: string, gameHistory: any[], c
       scene: gameHistory[gameHistory.length - 1]?.scene || "forest",
       emotion: "default", // Always provide a default emotion
       chapter: currentChapter,
-      isNewChapter: false
+      isNewChapter: false,
     };
   }
 }
 
 /**
- * Generates an image based on a text prompt
+ * Generates an image based on a text prompt, enhanced with game settings
  * @param prompt The text description of the image to generate
  * @param style Optional style parameter (default: "digital art")
+ * @param settings Optional game settings to enhance the prompt
  * @returns Object with image data or error
  */
 export async function generateImage(
   prompt: string,
-  style: string = "digital art"
+  style: string = "digital art",
+  settings?: GameSettings
 ) {
   try {
+    // Enhance the prompt based on settings if available
+    let enhancedPrompt = prompt;
+    let enhancedStyle = style;
+
+    if (settings) {
+      // Add mood to the prompt
+      if (settings.background.mood) {
+        enhancedPrompt = `${settings.background.mood}, ${prompt}`;
+      }
+
+      // Add universe type to style
+      if (settings.universe.type) {
+        enhancedStyle = `${style}, ${settings.universe.type} style`;
+      }
+
+      // Add weather if enabled
+      if (settings.background.weatherEffects) {
+        // Randomly select a weather condition
+        const weatherConditions = [
+          "sunny",
+          "rainy",
+          "foggy",
+          "stormy",
+          "snowy",
+        ];
+        const randomWeather =
+          weatherConditions[
+            Math.floor(Math.random() * weatherConditions.length)
+          ];
+        enhancedPrompt = `${randomWeather} weather, ${enhancedPrompt}`;
+      }
+
+      // Add time of day if enabled
+      if (settings.background.dynamicTimeOfDay) {
+        // Determine time of day based on game progression or randomly
+        const timeOfDay = [
+          "morning",
+          "noon",
+          "afternoon",
+          "evening",
+          "night",
+          "dawn",
+          "dusk",
+        ];
+        const randomTime =
+          timeOfDay[Math.floor(Math.random() * timeOfDay.length)];
+        enhancedPrompt = `${randomTime}, ${enhancedPrompt}`;
+      }
+    }
+
     const response = await fetch("/api/generate-image", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        prompt,
-        style,
+        prompt: enhancedPrompt,
+        style: enhancedStyle,
+        settings: settings, // Pass settings to the API
       }),
     });
 
@@ -181,6 +249,68 @@ export async function generateImage(
     console.error("Error generating image:", error);
     return {
       error: "Failed to generate image",
+      image: null,
+    };
+  }
+}
+
+/**
+ * Generates a character image based on emotion and game settings
+ * @param emotion The emotion to portray in the character
+ * @param characterType Optional character type/style
+ * @param settings Optional game settings to enhance the generation
+ * @returns Object with image data or error
+ */
+export async function generateCharacter(
+  emotion: string = "default",
+  characterType: string = "anime",
+  settings?: GameSettings
+) {
+  try {
+    // Extract all relevant settings for character generation
+    
+    const gender = settings?.character?.gender || "Female";
+    console.log("Gender is here",gender)
+    const universeType = settings?.universe?.type || "fantasy";
+    const consistentAppearance =
+      settings?.character?.consistentAppearance || true;
+    const dynamicClothing = settings?.character?.dynamicClothing || true;
+
+    console.log(
+      `Generating ${gender} ${characterType} character with emotion ${emotion}`
+    );
+
+    // Make request to internal API endpoint
+    const response = await fetch("/api/generate-character", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        emotion,
+        characterType,
+        gender, // Explicitly include gender
+        universeType, // Pass universe type for context
+        consistentAppearance,
+        dynamicClothing,
+        // Additional parameters to ensure unique generations
+        seed: Math.floor(Math.random() * 1000000), // Random seed for variation
+        timestamp: new Date().getTime(), // Timestamp to avoid caching issues
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error("Error generating character:", error);
+    return {
+      error: "Failed to generate character image",
       image: null,
     };
   }

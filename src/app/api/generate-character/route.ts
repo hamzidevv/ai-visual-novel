@@ -19,28 +19,49 @@ export async function POST(request: NextRequest) {
       prompt,
       emotion,
       characterType = "anime",
+      gender = "Female", // Default to Female for backward compatibility
+      universeType = "fantasy", // Get universe type for better character context
     } = await request.json();
-   let removeBackground = true
 
+    let removeBackground = true;
+    
+console.log("gender in my api route",gender)
     // Select the appropriate model ID
     const modelId = LEONARDO_MODELS[characterType] || LEONARDO_MODELS.anime;
 
-    // Create emotion-specific prompt
+    // Create base prompts that respect gender selection
+    let maleBasePrompt = `Photorealistic photography: A handsome medieval peasant man with well-defined features, wearing simple but well-fitted period clothing appropriate for ${universeType} setting. Full body portrait facing forward`;
+
+    let femaleBasePrompt = `Photorealistic photography: A beautiful medieval peasant woman with graceful features, wearing a simple yet charming linen dress with an apron and a corset appropriate for ${universeType} setting. Full body portrait facing forward`;
+
+    // Use gender-appropriate base
+    const genderBasePrompt =
+      gender.toLowerCase() === "male" ? maleBasePrompt : femaleBasePrompt;
+
+    // Create emotion-specific prompt with correct gender
     let characterPrompt;
     if (emotion === "happy") {
-      characterPrompt = `Photoreslistic photography: A beautiful happy medieval peasant woman posing flirtatiously in the middle of a bustling medieval fair. She has rosy cheeks, tousled hair, and a playful smile, wearing a simple yet charming linen dress with an apron and a corset. The fair is lively with merchants, performers, and villagers in the background—colorful market stalls, jugglers, and musicians add to the festive atmosphere. Soft natural lighting enhances her warm, inviting expression, with a hint of rustic charm. The style is a mix of romantic realism and fantasy, with rich textures and vibrant colors , unreal engine 5.1`;
+      if (gender.toLowerCase() === "male") {
+        characterPrompt = `${genderBasePrompt}. He has a bright smile, confident posture, and a joyful expression. He looks directly at the viewer with warmth and enthusiasm, unreal engine 5.1`;
+      } else {
+        characterPrompt = `${genderBasePrompt}. She has rosy cheeks, tousled hair, and a playful smile. She looks directly at the viewer with warmth and enthusiasm, unreal engine 5.1`;
+      }
     } else if (emotion === "sad") {
-      characterPrompt = `a sad, melancholic character with downcast eyes, ${characterType} style, high quality, full body portrait, facing forward`;
+      characterPrompt = `a sad, melancholic ${gender.toLowerCase()} character with downcast eyes, ${characterType} style, high quality, full body portrait, facing forward`;
     } else {
-      characterPrompt = `Photoreslistic photography: A beautiful medieval peasant woman posing flirtatiously in the middle of a bustling medieval fair. She has rosy cheeks, tousled hair, and a playful smile, wearing a simple yet charming linen dress with an apron and a corset. The fair is lively with merchants, performers, and villagers in the background—colorful market stalls, jugglers, and musicians add to the festive atmosphere. Soft natural lighting enhances her warm, inviting expression, with a hint of rustic charm. The style is a mix of romantic realism and fantasy, with rich textures and vibrant colors , unreal engine 5.1
-
-`;
+      characterPrompt = `${genderBasePrompt}. ${
+        gender.toLowerCase() === "male" ? "He has" : "She has"
+      } a neutral expression, dressed in attire fitting the ${universeType} setting. The style is a mix of realism and fantasy, with rich textures and vibrant colors, unreal engine 5.1`;
     }
 
     // Combine with user prompt if provided
     const finalPrompt = prompt
       ? `${prompt}, ${characterPrompt}`
       : characterPrompt;
+
+    console.log(
+      `Generating ${gender} ${characterType} character with emotion: ${emotion}`
+    );
 
     // Create generation request
     const response = await fetch(
@@ -125,8 +146,7 @@ export async function POST(request: NextRequest) {
     }
 
     const imageBuffer = await imageResponse.arrayBuffer();
-  let base64Image = Buffer.from(imageBuffer).toString("base64");
-
+    let base64Image = Buffer.from(imageBuffer).toString("base64");
 
     // Remove background if requested
     if (removeBackground && REMOVE_BG_API_KEY) {
@@ -146,7 +166,6 @@ export async function POST(request: NextRequest) {
           }
         );
 
-
         if (!removeBackgroundResponse.ok) {
           console.warn("Background removal failed, using original image");
         } else {
@@ -165,6 +184,7 @@ export async function POST(request: NextRequest) {
       image: base64Image,
       emotion,
       characterType,
+      gender, // Include gender in the response
       source: "leonardo",
       backgroundRemoved: removeBackground,
     });
@@ -178,6 +198,7 @@ export async function POST(request: NextRequest) {
         message: error.message,
         emotion: emotion || "default",
         characterType: characterType || "anime",
+        gender: gender || "Female",
       },
       { status: 500 }
     );
