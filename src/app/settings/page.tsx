@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useGameState } from "@/app/context/GameContext";
+import { GameProvider, useGameState } from "@/app/context/GameContext";
 
 // Types for our settings
 export interface GameSettings {
@@ -79,7 +79,7 @@ const universePresets = [
   },
 ];
 
-export default function SettingsPage() {
+ function SettingsPage() {
   const router = useRouter();
   const { gameState, setGameState, saveCurrentState } = useGameState();
   const [settings, setSettings] = useState<GameSettings>(
@@ -247,15 +247,18 @@ export default function SettingsPage() {
               <select
                 className="w-full p-3 rounded-lg border border-[#444465] bg-[#2a2a4a] text-white"
                 value={settings.character.gender}
-                onChange={(e) =>
+                onChange={(e) => {
+                  console.log("Previous Gender:", settings.character.gender);
+                  console.log("New Gender:", e.target.value);
+
                   setSettings({
                     ...settings,
                     character: {
                       ...settings.character,
                       gender: e.target.value,
                     },
-                  })
-                }
+                  });
+                }}
               >
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -497,3 +500,10 @@ const initialGameState = {
   narrative:
     "You're lost in a green forest. The trees tower above you, and sunlight filters through the leaves.",
 };
+export default function SettingsPageWithProvider() {
+  return (
+    <GameProvider>
+      <SettingsPage />
+    </GameProvider>
+  );
+}

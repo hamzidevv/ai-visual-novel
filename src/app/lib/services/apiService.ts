@@ -171,6 +171,12 @@ export async function generateNarrative(
  * @param style Optional style parameter (default: "digital art")
  * @param settings Optional game settings to enhance the prompt
  * @returns Object with image data or error
+/**
+ * Generates an image based on a text prompt, enhanced with game settings
+ * @param prompt The text description of the image to generate
+ * @param style Optional style parameter (default: "digital art")
+ * @param settings Optional game settings to enhance the prompt
+ * @returns Object with image data or error
  */
 export async function generateImage(
   prompt: string,
@@ -195,40 +201,21 @@ export async function generateImage(
 
       // Add weather if enabled
       if (settings.background.weatherEffects) {
-        // Randomly select a weather condition
-        const weatherConditions = [
-          "sunny",
-          "rainy",
-          "foggy",
-          "stormy",
-          "snowy",
-        ];
+        const weatherConditions = ["sunny", "rainy", "foggy", "stormy", "snowy"];
         const randomWeather =
-          weatherConditions[
-            Math.floor(Math.random() * weatherConditions.length)
-          ];
+          weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
         enhancedPrompt = `${randomWeather} weather, ${enhancedPrompt}`;
       }
 
       // Add time of day if enabled
       if (settings.background.dynamicTimeOfDay) {
-        // Determine time of day based on game progression or randomly
-        const timeOfDay = [
-          "morning",
-          "noon",
-          "afternoon",
-          "evening",
-          "night",
-          "dawn",
-          "dusk",
-        ];
-        const randomTime =
-          timeOfDay[Math.floor(Math.random() * timeOfDay.length)];
+        const timeOfDay = ["morning", "noon", "afternoon", "evening", "night", "dawn", "dusk"];
+        const randomTime = timeOfDay[Math.floor(Math.random() * timeOfDay.length)];
         enhancedPrompt = `${randomTime}, ${enhancedPrompt}`;
       }
     }
 
-    const response = await fetch("/api/generate-image", {
+    const response = await fetch("/api/background", {  // Corrected endpoint
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -253,7 +240,6 @@ export async function generateImage(
     };
   }
 }
-
 /**
  * Generates a character image based on emotion and game settings
  * @param emotion The emotion to portray in the character

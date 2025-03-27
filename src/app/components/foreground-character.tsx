@@ -39,7 +39,7 @@ export default function ForegroundCharacter() {
         gameState.settings?.character?.type?.toLowerCase() || "anime";
 
       // Get gender from settings - ensure it's available
-      const gender = gameState.settings?.character?.gender || "Female";
+      const gender = gameState.settings?.character?.gender 
 
       console.log("ForegroundCharacter - Using gender:", gender);
 
