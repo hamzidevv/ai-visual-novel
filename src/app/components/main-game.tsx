@@ -15,7 +15,7 @@ function GameContainer() {
 
  
   return (
-    <div className="min-h-screen p-2 flex flex-col justify-center items-center bg-slate-900 text-white relative">
+    <div className="min-h-screen p-2 flex flex-col justify-center items-center bg-white text-white relative">
       {/* Settings Button - positioned absolutely in the top-right */}
       <Link
         href="/settings"

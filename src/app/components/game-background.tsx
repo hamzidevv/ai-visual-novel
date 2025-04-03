@@ -1,55 +1,53 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useGameState } from "@/app/context/GameContext";
 import { generateImage } from "@/app/lib/services/apiService";
-
-// Map scene names to the limited available background images
-const SCENE_BACKGROUNDS: Record<string, string> = {
-  forest: "/backgrounds/forest.svg",
-  cave: "/backgrounds/cave.svg",
-  castle: "/backgrounds/castle.svg",
-};
 
 // Track which scenes have already had backgrounds generated
 const generatedBackgrounds: Record<string, string> = {};
 
 export default function GameBackground() {
   const { gameState } = useGameState();
-  const [backgroundSrc, setBackgroundSrc] = useState(SCENE_BACKGROUNDS.forest);
-  const [loading, setLoading] = useState(false);
-  const [generationFailed, setGenerationFailed] = useState(false);
+  const [backgroundSrc, setBackgroundSrc] = useState("");
+  const [loading, setLoading] = useState(true);
+  // Use a ref to track if a generation is in progress
+  const isGeneratingRef = useRef(false);
+  // Track the last generated scene
+  const lastSceneRef = useRef("");
 
   useEffect(() => {
+    // Skip if already generating to prevent multiple simultaneous requests
+    if (isGeneratingRef.current) {
+      return;
+    }
+
+    const currentScene = gameState.currentScene.toLowerCase();
+
+    // Skip if this is the same scene we just generated for
+    if (currentScene === lastSceneRef.current && backgroundSrc) {
+      return;
+    }
+
     async function loadBackground() {
-      const currentScene = gameState.currentScene.toLowerCase();
+      // Set generating flag to true
+      isGeneratingRef.current = true;
 
-      // Reset generation failed flag for new scenes
-      setGenerationFailed(false);
+      // Always show loading when switching scenes
+      setLoading(true);
 
-      // Force generation for the first input by checking if there's narrative text
-      const forceGeneration =
-        gameState.narrative && gameState.narrative.length > 0;
-
-      // Case 1: We already have a cached AI-generated background for this exact scene
-      if (generatedBackgrounds[currentScene] && !forceGeneration) {
+      // Check if we already have a cached AI-generated background for this exact scene
+      if (generatedBackgrounds[currentScene]) {
+        console.log("Using cached background for scene:", currentScene);
         setBackgroundSrc(generatedBackgrounds[currentScene]);
+        setLoading(false);
+        lastSceneRef.current = currentScene;
+        isGeneratingRef.current = false;
         return;
       }
 
-      // Case 2: We have a predefined background for this exact scene
-      // Use it while we generate a better one in the background
-      if (SCENE_BACKGROUNDS[currentScene]) {
-        setBackgroundSrc(SCENE_BACKGROUNDS[currentScene]);
-        // If this is just the initial scene with no narrative, don't generate yet
-        if (!forceGeneration) {
-          return;
-        }
-      }
-
-      // Case 3: Generate a new background with AI
-      setLoading(true);
+      // Generate a new background with AI
       try {
         // Create a rich prompt based on scene name and previous narrative
         const sceneDescription = currentScene.replace(/_/g, " ");
@@ -61,6 +59,7 @@ export default function GameBackground() {
           100
         )}`;
 
+        console.log("Generating new background for scene:", currentScene);
         const result = await generateImage(prompt);
 
         if (!result.error && result.image) {
@@ -68,61 +67,24 @@ export default function GameBackground() {
           // Cache the generated background
           generatedBackgrounds[currentScene] = imageUrl;
           setBackgroundSrc(imageUrl);
-          return;
+          lastSceneRef.current = currentScene;
         } else {
           throw new Error("Image generation failed");
         }
       } catch (error) {
         console.error("Failed to generate background:", error);
-        setGenerationFailed(true);
-
-        // Fallback to finding a suitable predefined background
-        fallbackToStaticBackground(currentScene);
+        // Keep existing background if available
       } finally {
         setLoading(false);
+        isGeneratingRef.current = false;
       }
-    }
-
-    function fallbackToStaticBackground(scene: string) {
-      // Find the closest matching background from predefined ones
-
-      // Check for partial matches
-      for (const [key, path] of Object.entries(SCENE_BACKGROUNDS)) {
-        if (scene.includes(key)) {
-          setBackgroundSrc(path);
-          return;
-        }
-      }
-
-      // Semantic fallbacks for common scenes
-      if (/village|town|city|market|shop|inn|tavern|house|home/.test(scene)) {
-        setBackgroundSrc(SCENE_BACKGROUNDS.castle); // Use castle for urban settings
-        return;
-      }
-
-      if (
-        /mountain|hill|cliff|peak|valley|river|lake|stream|waterfall|ocean|sea|beach|coast/.test(
-          scene
-        )
-      ) {
-        setBackgroundSrc(SCENE_BACKGROUNDS.forest); // Use forest for natural landscapes
-        return;
-      }
-
-      if (/temple|shrine|church|altar|tomb|grave|ruin|ancient/.test(scene)) {
-        setBackgroundSrc(SCENE_BACKGROUNDS.cave); // Use cave for mysterious places
-        return;
-      }
-
-      // Ultimate fallback
-      setBackgroundSrc(SCENE_BACKGROUNDS.forest);
     }
 
     loadBackground();
   }, [gameState.currentScene, gameState.narrative, gameState.timestamp]);
 
   return (
-    <div className="relative w-full h-[130vh] overflow-hidden bg-slate-800">
+    <div className="relative w-full h-[100vh] overflow-hidden bg-slate-800">
       {loading ? (
         <div className="flex items-center justify-center w-full h-full text-white text-2xl">
           <div className="text-center">
@@ -131,20 +93,13 @@ export default function GameBackground() {
           </div>
         </div>
       ) : (
-        <>
-          <Image
-            src={backgroundSrc}
-            alt={gameState.currentScene}
-            fill
-            style={{ objectFit: "cover" }}
-            priority
-          />
-          {generationFailed && (
-            <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs p-1 rounded">
-              Using fallback background
-            </div>
-          )}
-        </>
+        <Image
+          src={backgroundSrc}
+          alt={gameState.currentScene}
+          fill
+          style={{ objectFit: "cover" }}
+          priority
+        />
       )}
     </div>
   );

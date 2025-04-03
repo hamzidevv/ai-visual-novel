@@ -1,215 +1,157 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useGameState } from "@/app/context/GameContext";
 import { Mic, StopCircle } from "lucide-react";
 
 export default function TextBox() {
   const { gameState, setGameState } = useGameState();
   const [displayedText, setDisplayedText] = useState("");
-  const [showChapterTransition, setShowChapterTransition] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [speechInstance, setSpeechInstance] = useState(null);
-  const transitionTimerRef = useRef(null);
-  // Force close timer as a failsafe
-  const forceCloseTimerRef = useRef(null);
+  // Note: Removed unused speechInstance state
 
-  // Counter to track number of attempts to close the transition
-  const [closeAttempts, setCloseAttempts] = useState(0);
-
+  // Utility function to clean narrative text and handle potential emotion prefixes
   const cleanNarrativeText = (text) => {
     if (!text) return "";
     let cleaned = text.trim();
-    const emotions = ["happy", "sad", "default"];
+    // Example: Remove potential prefixes like "happy ", "sad ", etc.
+    const emotions = ["happy", "sad", "default"]; // Add any other prefixes used
     for (const emotion of emotions) {
+      // Case-insensitive match at the start of the string, followed by a space
       const regex = new RegExp(`^${emotion}\\s+`, "i");
       cleaned = cleaned.replace(regex, "");
     }
+    // Ensure first letter is uppercase
     return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
   };
 
-  // Handle forced closure of transition
+  // Effect to handle chapter changes (resetting isNewChapter flag)
   useEffect(() => {
-    // If stuck on transition screen for too long, force close it
-    if (showChapterTransition && closeAttempts > 0) {
-      console.log(`Attempt #${closeAttempts} to force close transition`);
-
-      // Manual force close after multiple attempts
-      if (closeAttempts >= 3) {
-        console.log("Emergency: Forcing chapter transition to close");
-        setShowChapterTransition(false);
-        setGameState((prev) => ({
-          ...prev,
-          isNewChapter: false,
-        }));
-      }
-    }
-  }, [closeAttempts, showChapterTransition, setGameState]);
-
-  // Handle chapter transitions
-  useEffect(() => {
-    // Clear any existing timers
-    if (transitionTimerRef.current) {
-      clearTimeout(transitionTimerRef.current);
-      transitionTimerRef.current = null;
-    }
-
-    if (forceCloseTimerRef.current) {
-      clearTimeout(forceCloseTimerRef.current);
-      forceCloseTimerRef.current = null;
-    }
-
     if (gameState.isNewChapter) {
-      console.log("Showing chapter transition", gameState.chapter);
-
-      // Reset close attempts
-      setCloseAttempts(0);
-
-      // Show the transition
-      setShowChapterTransition(true);
-
-      // Set primary timer to hide transition
-      transitionTimerRef.current = setTimeout(() => {
-        console.log("Primary timer: hiding chapter transition");
-        setShowChapterTransition(false);
-        setGameState((prev) => ({
-          ...prev,
-          isNewChapter: false,
-        }));
-      }, 3000);
-
-      // Set backup timer as failsafe
-      forceCloseTimerRef.current = setTimeout(() => {
-        if (showChapterTransition) {
-          setCloseAttempts((prev) => prev + 1);
-        }
-      }, 5000);
-    }
-
-    // Clean up timers on component unmount or state change
-    return () => {
-      if (transitionTimerRef.current) {
-        clearTimeout(transitionTimerRef.current);
-      }
-      if (forceCloseTimerRef.current) {
-        clearTimeout(forceCloseTimerRef.current);
-      }
-    };
-  }, [
-    gameState.chapter,
-    gameState.isNewChapter,
-    setGameState,
-    showChapterTransition,
-  ]);
-
-  // Update displayed text when narrative changes
-  useEffect(() => {
-    if (gameState.narrative) {
-      setDisplayedText(cleanNarrativeText(gameState.narrative));
-    }
-  }, [gameState.narrative]);
-
-  // Manual skip/close function for transition
-  const closeTransition = () => {
-    if (showChapterTransition) {
-      console.log("Manual close of chapter transition");
-      setShowChapterTransition(false);
+      console.log(
+        "Chapter changed internally, resetting flag:",
+        gameState.chapter
+      );
+      // Reset the flag immediately after acknowledging the change
       setGameState((prev) => ({
         ...prev,
         isNewChapter: false,
       }));
-
-      // Clear any timers
-      if (transitionTimerRef.current) {
-        clearTimeout(transitionTimerRef.current);
-        transitionTimerRef.current = null;
-      }
-
-      if (forceCloseTimerRef.current) {
-        clearTimeout(forceCloseTimerRef.current);
-        forceCloseTimerRef.current = null;
-      }
     }
-  };
+  }, [gameState.isNewChapter, gameState.chapter, setGameState]);
 
-  const handleSkip = () => {
-    // First check if we need to close the transition
-    if (showChapterTransition) {
-      closeTransition();
-      return;
-    }
-
-    // Otherwise handle text display
+  // Effect to update displayed text when narrative changes
+  useEffect(() => {
     if (gameState.narrative) {
+      // Stop any ongoing speech before changing text
+      if (isSpeaking) {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+      }
       setDisplayedText(cleanNarrativeText(gameState.narrative));
+    } else {
+      // Clear text if narrative is empty/null
+      setDisplayedText("");
+    }
+  }, [gameState.narrative]); // Removed isSpeaking dependency here
+
+  // Click handler for the main text box area (optional: could trigger skip/next)
+  const handleSkip = () => {
+    // If you implement typing animation later, this could skip it.
+    // For now, it doesn't do much visually if text updates instantly.
+    console.log("Text box clicked");
+    // Optionally stop speech on skip/click
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
     }
   };
 
+  // Toggle text-to-speech
   const handleSpeakToggle = (e) => {
-    if (e) e.stopPropagation();
+    e.stopPropagation(); // Prevent triggering handleSkip on the parent div
 
     if (!("speechSynthesis" in window)) {
-      alert("Speech synthesis is not supported in your browser.");
+      alert("Sorry, your browser doesn't support text-to-speech.");
       return;
     }
 
     if (isSpeaking) {
-      // Stop speaking
+      // Stop current speech
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
     } else {
+      if (!displayedText) return; // Don't speak if there's no text
       // Start speaking
-      const speech = new SpeechSynthesisUtterance(displayedText);
-      speech.lang = "en-US";
-      speech.onend = () => setIsSpeaking(false);
-      speech.onerror = () => setIsSpeaking(false);
-      setSpeechInstance(speech);
-      window.speechSynthesis.speak(speech);
+      const utterance = new SpeechSynthesisUtterance(displayedText);
+      utterance.lang = "en-US"; // Set language for better pronunciation
+      utterance.onend = () => {
+        console.log("Speech finished.");
+        setIsSpeaking(false);
+      };
+      utterance.onerror = (event) => {
+        console.error("Speech synthesis error:", event);
+        setIsSpeaking(false);
+      };
+      // Removed unnecessary speechInstance state, directly use the utterance
+      window.speechSynthesis.speak(utterance);
       setIsSpeaking(true);
     }
   };
 
+  // Cleanup effect to cancel speech synthesis when the component unmounts
+  useEffect(() => {
+    return () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  // Determine speaker name
+  const speakerName =
+    gameState.character && gameState.character !== "default"
+      ? gameState.character.charAt(0).toUpperCase() +
+        gameState.character.slice(1)
+      : "Narrator";
+
   return (
-    <>
-      {showChapterTransition && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
-          onClick={closeTransition} // Click anywhere to dismiss
-        >
-          <div className="text-center">
-            <h2 className="text-4xl font-bold text-white mb-4">
-              {gameState.chapterTitle || `Chapter ${gameState.chapter}`}
-            </h2>
-            <div className="w-24 h-1 bg-blue-500 mx-auto"></div>
-            {/* Added dismiss instruction */}
-            <div className="text-white mt-8 opacity-70 text-sm">
-              Click anywhere to continue
-            </div>
+    // Position container: Bottom center, wider margins, responsive width
+    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-11/12 max-w-3xl z-10 px-2 sm:px-0">
+      {/* Main styled box: Light background, very rounded, subtle border, shadow */}
+      <div
+        className="bg-indigo-50 bg-opacity-95 rounded-3xl p-5 shadow-lg border border-indigo-200 flex justify-between items-center space-x-4 cursor-pointer hover:shadow-xl transition-shadow duration-200"
+        onClick={handleSkip} // Attach skip handler here
+        role="dialog" // Better semantics
+        aria-label={`${speakerName} says: ${displayedText}`}
+      >
+        {/* Text content area (takes up available space) */}
+        <div className="flex-grow">
+          {/* Speaker Name */}
+          <div className="text-indigo-700 font-semibold mb-1 text-lg">
+            {speakerName}
+          </div>
+          {/* Narrative Text */}
+          <div className="text-slate-800 min-h-[48px] leading-relaxed">
+            {" "}
+            {/* Increased min-height slightly */}
+            {displayedText || (
+              <span className="text-slate-400 italic">...</span>
+            )}{" "}
+            {/* Placeholder if empty */}
           </div>
         </div>
-      )}
-      <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-[calc(100%-20px)] max-w-3xl z-10">
-        <div
-          className="bg-[#242442] bg-opacity-85 rounded-lg p-4 shadow-lg border border-slate-700 flex justify-between items-center"
-          onClick={handleSkip}
+
+        {/* Speak/Stop Button (does not shrink) */}
+        <button
+          onClick={handleSpeakToggle}
+          className="flex-shrink-0 text-indigo-600 p-2 rounded-full hover:bg-indigo-100 active:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-indigo-50 transition-colors duration-150"
+          aria-label={
+            isSpeaking ? "Stop reading text aloud" : "Read text aloud"
+          }
         >
-          <div>
-            <div className="bg-gradient-to-r from-[#6A5ACD] to-[#FF69B4] bg-clip-text text-transparent font-bold mb-1 text-lg">
-              {gameState.character !== "default"
-                ? gameState.character.charAt(0).toUpperCase() +
-                  gameState.character.slice(1)
-                : "Narrator"}
-            </div>
-            <div className="text-white min-h-[40px]">{displayedText}</div>
-          </div>
-          {/* Toggle Speak/Stop Icon */}
-          <button
-            onClick={handleSpeakToggle}
-            className="text-white p-2 rounded-full hover:bg-gray-700 transition"
-          >
-            {isSpeaking ? <StopCircle size={24} /> : <Mic size={24} />}
-          </button>
-        </div>
+          {isSpeaking ? <StopCircle size={24} /> : <Mic size={24} />}
+        </button>
       </div>
-    </>
+    </div>
   );
 }

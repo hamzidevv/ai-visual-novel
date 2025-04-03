@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useGameState } from "@/app/context/GameContext";
 import { generateNarrative } from "@/app/lib/services/apiService";
-import { Mic, MicOff } from "lucide-react"; // Import mic icons
+import { Mic, MicOff, SendHorizontal } from "lucide-react"; // Added SendHorizontal icon
 
 // Type for the speech recognition API
 declare global {
@@ -201,8 +201,8 @@ export default function InputBox() {
   };
 
   return (
-    <div className="w-[90%] mx-auto my-4">
-      <form onSubmit={handleSubmit} className="flex">
+    <div className="w-[90%] mx-auto my-6">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-grow">
           <input
             type="text"
@@ -210,60 +210,71 @@ export default function InputBox() {
             onChange={(e) => setUserInput(e.target.value)}
             placeholder="Type your next action... (try /happy, /sad, /nextchapter, /settings)"
             disabled={gameState.loading}
-            className="w-full py-3 px-4 text-base border-2 border-slate-600 rounded-l-lg outline-none pr-10"
+            className="w-full py-3 px-4 text-base bg-gray-800 text-white border-2 border-indigo-700 rounded-full outline-none pr-10 shadow-md focus:ring-2 focus:ring-indigo-500 transition-all"
           />
           <button
             type="button"
             onClick={toggleListening}
             disabled={!speechRecognition || gameState.loading}
-            className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full ${
-              isListening ? "text-red-500" : "text-slate-600"
-            } hover:bg-gray-700 hover:text-white focus:outline-none transition-colors`}
+            className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full 
+            ${
+              isListening
+                ? "bg-red-600 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-indigo-600 hover:text-white"
+            } 
+            focus:outline-none transition-colors duration-200 ease-in-out shadow-sm`}
             title={isListening ? "Stop listening" : "Start voice input"}
           >
-            {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+            {isListening ? <MicOff size={18} /> : <Mic size={18} />}
           </button>
         </div>
         <button
           type="submit"
           disabled={gameState.loading}
-          className="py-3 px-6 bg-blue-500 text-white font-bold border-none rounded-r-lg cursor-pointer disabled:bg-slate-400 disabled:cursor-not-allowed"
+          className="py-3 px-6  bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-full cursor-pointer hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed transition-all duration-200 shadow-md flex items-center justify-center gap-2"
         >
-          {gameState.loading ? "Thinking..." : "Send"}
+          {gameState.loading ? (
+            "Thinking..."
+          ) : (
+            <>
+              <SendHorizontal size={18} />
+              <span>Send</span>
+            </>
+          )}
         </button>
       </form>
 
       {/* Debug info - optional, can be removed for production */}
-      <div className="mt-2 text-xs text-gray-400 flex justify-between">
+      <div className="mt-3 text-xs text-gray-400 flex flex-col sm:flex-row sm:justify-between gap-2 bg-gray-800 p-2 rounded-full">
         <div>
           Scene: {gameState.currentScene} | Chapter: {gameState.chapter}
           {gameState.settings &&
             ` | Universe: ${gameState.settings.universe.type}`}
         </div>
-        <div>Character: {gameState.character || "default"}</div>
-        <div>
-          Test commands:
+        
+        <div className="flex flex-wrap gap-1">
+          <span className="mr-1">Test:</span>
           <button
             onClick={() => setUserInput("/happy")}
-            className="ml-2 px-2 bg-green-600 rounded text-white"
+            className="px-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded text-white text-xs shadow-sm"
           >
             /happy
           </button>
           <button
             onClick={() => setUserInput("/sad")}
-            className="ml-2 px-2 bg-blue-600 rounded text-white"
+            className="px-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded text-white text-xs shadow-sm"
           >
             /sad
           </button>
           <button
             onClick={() => setUserInput("/nextchapter")}
-            className="ml-2 px-2 bg-yellow-600 rounded text-white"
+            className="px-2 bg-gradient-to-r from-yellow-500 to-amber-600 rounded text-white text-xs shadow-sm"
           >
             /nextchapter
           </button>
           <button
             onClick={() => setUserInput("/settings")}
-            className="ml-2 px-2 bg-purple-600 rounded text-white"
+            className="px-2 bg-gradient-to-r from-purple-500 to-fuchsia-600 rounded text-white text-xs shadow-sm"
           >
             /settings
           </button>
@@ -272,7 +283,7 @@ export default function InputBox() {
 
       {/* Speech indicator */}
       {isListening && (
-        <div className="mt-2 text-sm text-center text-red-500 animate-pulse">
+        <div className="mt-2 text-sm text-center text-red-400 animate-pulse bg-red-900/20 p-1 rounded-md">
           Listening... (speak now)
         </div>
       )}
