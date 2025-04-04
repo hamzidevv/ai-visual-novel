@@ -178,60 +178,58 @@ export async function generateNarrative(
  * @param settings Optional game settings to enhance the prompt
  * @returns Object with image data or error
  */
+/**
+ * Generates an image based on a text prompt, enhanced with game settings
+ * @param prompt The text description of the image to generate
+ * @param style Optional style parameter (default: "digital art")
+ * @param settings Optional game settings to enhance the prompt
+ * @returns Object with image data or error
+ */
 export async function generateImage(
   prompt: string,
   style: string = "digital art",
   settings?: GameSettings
 ) {
   try {
-    // Enhance the prompt based on settings if available
-    let enhancedPrompt = prompt;
-    let enhancedStyle = style;
+    // Add a unique timestamp to prevent caching issues
+    const timestamp = Date.now();
 
-    if (settings) {
-      // Add mood to the prompt
-      if (settings.background.mood) {
-        enhancedPrompt = `${settings.background.mood}, ${prompt}`;
-      }
+    // Prepare the request body with full settings data
+    const requestBody = {
+      prompt,
+      style,
+      settings,
+      timestamp // Add timestamp to ensure unique requests
+    };
 
-      // Add universe type to style
-      if (settings.universe.type) {
-        enhancedStyle = `${style}, ${settings.universe.type} style`;
-      }
+    console.log("Generating image with settings:", {
+      prompt, 
+      universe: settings?.universe?.type,
+      mood: settings?.background?.mood,
+      weather: settings?.background?.weatherEffects,
+      timeOfDay: settings?.background?.dynamicTimeOfDay
+    });
 
-      // Add weather if enabled
-      if (settings.background.weatherEffects) {
-        const weatherConditions = ["sunny", "rainy", "foggy", "stormy", "snowy"];
-        const randomWeather =
-          weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
-        enhancedPrompt = `${randomWeather} weather, ${enhancedPrompt}`;
-      }
-
-      // Add time of day if enabled
-      if (settings.background.dynamicTimeOfDay) {
-        const timeOfDay = ["morning", "noon", "afternoon", "evening", "night", "dawn", "dusk"];
-        const randomTime = timeOfDay[Math.floor(Math.random() * timeOfDay.length)];
-        enhancedPrompt = `${randomTime}, ${enhancedPrompt}`;
-      }
-    }
-
-    const response = await fetch("/api/background", {  // Corrected endpoint
+    const response = await fetch("/api/background", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        prompt: enhancedPrompt,
-        style: enhancedStyle,
-        settings: settings, // Pass settings to the API
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    
+    // Log if we get a prompt back for debugging
+    if (data.promptUsed) {
+      console.log("Used prompt for image generation:", data.promptUsed);
+    }
+
+    return data;
   } catch (error) {
     console.error("Error generating image:", error);
     return {
