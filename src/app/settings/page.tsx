@@ -7,7 +7,6 @@ import { Sparkles, Globe, User, Image, ArrowLeft, Wand2 } from "lucide-react";
 
 const GAME_STATE_KEY = "storyQuestGameState";
 
-// Types for our settings
 export interface GameSettings {
   universe: {
     type: string;
@@ -27,7 +26,6 @@ export interface GameSettings {
   };
 }
 
-// Default settings
 const defaultSettings: GameSettings = {
   universe: {
     type: "fantasy",
@@ -224,9 +222,7 @@ function SettingsPage() {
           </div>
         </div>
 
-        {/* Settings panels */}
         <div className="max-w-4xl mx-auto">
-          {/* Story Universe Settings */}
           <div className={`${activeTab === "universe" ? "" : "hidden"}`}>
             <div className="glass-card p-8 rounded-2xl mb-6 bg-black/30 backdrop-blur-md border border-white/10 relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-800/10 to-blue-900/10 opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
