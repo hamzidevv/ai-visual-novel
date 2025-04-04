@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { GameProvider, useGameState } from "@/app/context/GameContext";
 import { Sparkles, Globe, User, Image, ArrowLeft, Wand2 } from "lucide-react";
-
+import { generateNarrative } from "../lib/services/apiService";
 const GAME_STATE_KEY = "storyQuestGameState";
 
 export interface GameSettings {
@@ -88,6 +88,7 @@ function SettingsPage() {
   );
   const [isNewGame, setIsNewGame] = useState(false);
   const [activeTab, setActiveTab] = useState("universe");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Detect if this is a new game based on narrative content
   useEffect(() => {
@@ -115,41 +116,131 @@ function SettingsPage() {
   };
 
   // Save settings and start the game
-  const handleStartGame = () => {
-    // Save settings to localStorage for redundancy
-    localStorage.setItem("gameSettings", JSON.stringify(settings));
+ const handleStartGame = async () => {
+   // Save settings to localStorage for redundancy
+   localStorage.setItem("gameSettings", JSON.stringify(settings));
+   setIsLoading(true); // Start loading state
 
-    if (isNewGame) {
-      // For a new game, create and save a fresh game state
-      const newGameState = {
-        ...initialGameState,
-        settings: settings,
-        currentScene: "forest",
-        character: "default",
-        narrative: `You find yourself in ${
-          settings.universe.description.split(".")[0]
-        }.`,
-        history: [],
-        loading: false,
-        chapter: 1,
-        isNewChapter: true,
-        chapterTitle: "Chapter 1: The Beginning",
-      };
-      localStorage.setItem(GAME_STATE_KEY, JSON.stringify(newGameState));
-    } else {
-      // For an existing game, update and save the current state with new settings
-      const updatedGameState = {
-        ...gameState,
-        settings: settings,
-        narrative: gameState.narrative,
-      };
-      localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
-    }
+   console.log("Starting game with settings:", settings);
 
-    // Redirect to the main game page
-    router.push("/");
-  };
+   if (isNewGame) {
+     // For a new game, create and save a fresh game state
+     const newGameState = {
+       ...initialGameState,
+       settings: settings,
+       currentScene: "forest",
+       character: "default",
+       narrative: `You find yourself in ${
+         settings.universe.description.split(".")[0]
+       }.`,
+       history: [],
+       loading: false,
+       chapter: 1,
+       isNewChapter: true,
+       chapterTitle: "Chapter 1: The Beginning",
+     };
+     setGameState(newGameState);
+     localStorage.setItem(GAME_STATE_KEY, JSON.stringify(newGameState));
+     router.push("/");
+   } else {
+     // Check if settings have actually changed
+     const hasSettingsChanged =
+       gameState.settings?.universe?.type !== settings.universe.type ||
+       gameState.settings?.universe?.description !==
+         settings.universe.description ||
+       gameState.settings?.background?.mood !== settings.background.mood;
 
+     console.log("Settings changed?", hasSettingsChanged);
+
+     if (hasSettingsChanged) {
+       try {
+         // Set loading state temporarily
+         setGameState({
+           ...gameState,
+           settings: settings,
+           loading: true,
+         });
+
+         // Create a special input to signal settings change
+         const settingsTransitionInput =
+           "I look around as the world seems to shift around me.";
+
+         console.log("Calling generateNarrative for settings change", {
+           gameHistory: gameState.history.length,
+           settingsType: settings.universe.type,
+           settingsMood: settings.background.mood,
+         });
+
+         // Generate narrative based on settings change
+         const response = await generateNarrative(
+           settingsTransitionInput,
+           [
+             ...gameState.history,
+             {
+               narrative: gameState.narrative,
+               scene: gameState.currentScene,
+               chapter: gameState.chapter,
+             },
+           ],
+           gameState.chapter,
+           settings,
+           true // Force settingsChanged flag
+         );
+
+         console.log("Received response from generateNarrative:", response);
+
+         // Update game state with the new narrative
+         const updatedGameState = {
+           ...gameState,
+           settings: settings,
+           narrative: response.narrative,
+           currentScene: response.scene || gameState.currentScene,
+           character: response.emotion || "default",
+           chapter: response.chapter || gameState.chapter,
+           isNewChapter: response.isNewChapter || false,
+           loading: false,
+           timestamp: new Date().getTime(),
+         };
+
+         setGameState(updatedGameState);
+         localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
+       } catch (error) {
+         console.error("Error generating settings transition:", error);
+         // Log more detailed error information
+         if (error instanceof Error) {
+           console.error("Error details:", {
+             message: error.message,
+             stack: error.stack,
+             name: error.name,
+           });
+         }
+
+         // If there's an error, create a basic transition narrative without API
+         const fallbackNarrative = `As you blink, the world around you shifts dramatically. The environment transforms to match your new journey in ${settings.universe.type} with a ${settings.background.mood} atmosphere.`;
+
+         const updatedGameState = {
+           ...gameState,
+           settings: settings,
+           narrative: fallbackNarrative,
+           loading: false,
+           timestamp: new Date().getTime(),
+         };
+         setGameState(updatedGameState);
+         localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
+       }
+     } else {
+       // If settings haven't changed, just update the state
+       const updatedGameState = {
+         ...gameState,
+         settings: settings,
+       };
+       setGameState(updatedGameState);
+       localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
+     }
+
+     router.push("/");
+   }
+ };
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f0f1e] to-[#1a1a2e] text-white">
       {/* Animated background elements */}
