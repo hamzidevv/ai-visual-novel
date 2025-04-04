@@ -115,132 +115,248 @@ function SettingsPage() {
     }
   };
 
+  // Handle universe type selection
+  const handleUniverseTypeChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newType = e.target.value;
+
+    // If selecting "custom", don't change the description
+    if (newType === "custom") {
+      setSettings({
+        ...settings,
+        universe: {
+          ...settings.universe,
+          type: newType,
+          preset: "Custom",
+        },
+      });
+      return;
+    }
+
+    // Try to find a matching preset for this universe type
+    const matchingPreset = universePresets.find(
+      (preset) => preset.type === newType
+    );
+
+    if (matchingPreset) {
+      // If there's a matching preset, use its description
+      setSettings({
+        ...settings,
+        universe: {
+          ...settings.universe,
+          type: newType,
+          description: matchingPreset.description,
+          preset: matchingPreset.name,
+        },
+      });
+    } else {
+      // Otherwise just update the type
+      setSettings({
+        ...settings,
+        universe: {
+          ...settings.universe,
+          type: newType,
+          preset: "Custom",
+        },
+      });
+    }
+  };
+
+  // Handle custom description changes
+  const handleCustomDescriptionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const customDescription = e.target.value;
+
+    // Check if this description matches any preset
+    const matchingPreset = universePresets.find(
+      (preset) => preset.description === customDescription
+    );
+
+    setSettings({
+      ...settings,
+      universe: {
+        ...settings.universe,
+        description: customDescription,
+        // If no matching preset found, set preset to "Custom"
+        preset: matchingPreset ? matchingPreset.name : "Custom",
+      },
+    });
+  };
+
   // Save settings and start the game
- const handleStartGame = async () => {
-   // Save settings to localStorage for redundancy
-   localStorage.setItem("gameSettings", JSON.stringify(settings));
-   setIsLoading(true); // Start loading state
+  // Fix the handleStartGame function to ensure redirection happens
 
-   console.log("Starting game with settings:", settings);
+  const handleStartGame = async () => {
+    try {
+      // Save settings to localStorage for redundancy
+      localStorage.setItem("gameSettings", JSON.stringify(settings));
+      setIsLoading(true); // Start loading state
 
-   if (isNewGame) {
-     // For a new game, create and save a fresh game state
-     const newGameState = {
-       ...initialGameState,
-       settings: settings,
-       currentScene: "forest",
-       character: "default",
-       narrative: `You find yourself in ${
-         settings.universe.description.split(".")[0]
-       }.`,
-       history: [],
-       loading: false,
-       chapter: 1,
-       isNewChapter: true,
-       chapterTitle: "Chapter 1: The Beginning",
-     };
-     setGameState(newGameState);
-     localStorage.setItem(GAME_STATE_KEY, JSON.stringify(newGameState));
-     router.push("/");
-   } else {
-     // Check if settings have actually changed
-     const hasSettingsChanged =
-       gameState.settings?.universe?.type !== settings.universe.type ||
-       gameState.settings?.universe?.description !==
-         settings.universe.description ||
-       gameState.settings?.background?.mood !== settings.background.mood;
+      console.log("Starting game with settings:", settings);
 
-     console.log("Settings changed?", hasSettingsChanged);
+      if (isNewGame) {
+        // For a new game, create and save a fresh game state
+        const newGameState = {
+          ...initialGameState,
+          settings: settings,
+          currentScene: "forest",
+          character: "default",
+          narrative: `You find yourself in ${
+            settings.universe.description.split(".")[0]
+          }.`,
+          history: [],
+          loading: false,
+          chapter: 1,
+          isNewChapter: true,
+          chapterTitle: "Chapter 1: The Beginning",
+        };
+        setGameState(newGameState);
+        localStorage.setItem(GAME_STATE_KEY, JSON.stringify(newGameState));
+      } else {
+        // Check if settings have actually changed
+        const hasSettingsChanged =
+          gameState.settings?.universe?.type !== settings.universe.type ||
+          gameState.settings?.universe?.description !==
+            settings.universe.description ||
+          gameState.settings?.background?.mood !== settings.background.mood;
 
-     if (hasSettingsChanged) {
-       try {
-         // Set loading state temporarily
-         setGameState({
-           ...gameState,
-           settings: settings,
-           loading: true,
-         });
+        console.log("Settings changed?", hasSettingsChanged);
 
-         // Create a special input to signal settings change
-         const settingsTransitionInput =
-           "I look around as the world seems to shift around me.";
+        if (hasSettingsChanged) {
+          try {
+            // Set loading state temporarily
+            setGameState({
+              ...gameState,
+              settings: settings,
+              loading: true,
+            });
 
-         console.log("Calling generateNarrative for settings change", {
-           gameHistory: gameState.history.length,
-           settingsType: settings.universe.type,
-           settingsMood: settings.background.mood,
-         });
+            // Create a special input to signal settings change
+            const settingsTransitionInput =
+              "I look around as the world seems to shift around me.";
 
-         // Generate narrative based on settings change
-         const response = await generateNarrative(
-           settingsTransitionInput,
-           [
-             ...gameState.history,
-             {
-               narrative: gameState.narrative,
-               scene: gameState.currentScene,
-               chapter: gameState.chapter,
-             },
-           ],
-           gameState.chapter,
-           settings,
-           true // Force settingsChanged flag
-         );
+            console.log("Calling generateNarrative for settings change", {
+              gameHistory: gameState.history.length,
+              settingsType: settings.universe.type,
+              settingsMood: settings.background.mood,
+            });
 
-         console.log("Received response from generateNarrative:", response);
+            // Set timeout to prevent infinite loading
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(
+                () => reject(new Error("Narrative generation timed out")),
+                10000
+              )
+            );
 
-         // Update game state with the new narrative
-         const updatedGameState = {
-           ...gameState,
-           settings: settings,
-           narrative: response.narrative,
-           currentScene: response.scene || gameState.currentScene,
-           character: response.emotion || "default",
-           chapter: response.chapter || gameState.chapter,
-           isNewChapter: response.isNewChapter || false,
-           loading: false,
-           timestamp: new Date().getTime(),
-         };
+            // Generate narrative based on settings change with timeout
+            const responsePromise = generateNarrative(
+              settingsTransitionInput,
+              [
+                ...gameState.history,
+                {
+                  narrative: gameState.narrative,
+                  scene: gameState.currentScene,
+                  chapter: gameState.chapter,
+                },
+              ],
+              gameState.chapter,
+              settings,
+              true // Force settingsChanged flag
+            );
 
-         setGameState(updatedGameState);
-         localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
-       } catch (error) {
-         console.error("Error generating settings transition:", error);
-         // Log more detailed error information
-         if (error instanceof Error) {
-           console.error("Error details:", {
-             message: error.message,
-             stack: error.stack,
-             name: error.name,
-           });
-         }
+            // Race between API call and timeout
+            const response = await Promise.race([
+              responsePromise,
+              timeoutPromise,
+            ]);
 
-         // If there's an error, create a basic transition narrative without API
-         const fallbackNarrative = `As you blink, the world around you shifts dramatically. The environment transforms to match your new journey in ${settings.universe.type} with a ${settings.background.mood} atmosphere.`;
+            console.log("Received response from generateNarrative:", response);
 
-         const updatedGameState = {
-           ...gameState,
-           settings: settings,
-           narrative: fallbackNarrative,
-           loading: false,
-           timestamp: new Date().getTime(),
-         };
-         setGameState(updatedGameState);
-         localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
-       }
-     } else {
-       // If settings haven't changed, just update the state
-       const updatedGameState = {
-         ...gameState,
-         settings: settings,
-       };
-       setGameState(updatedGameState);
-       localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
-     }
+            // Update game state with the new narrative
+            const updatedGameState = {
+              ...gameState,
+              settings: settings,
+              narrative: response.narrative,
+              currentScene: response.scene || gameState.currentScene,
+              character: response.emotion || "default",
+              chapter: response.chapter || gameState.chapter,
+              isNewChapter: response.isNewChapter || false,
+              loading: false,
+              timestamp: new Date().getTime(),
+            };
 
-     router.push("/");
-   }
- };
+            setGameState(updatedGameState);
+            localStorage.setItem(
+              GAME_STATE_KEY,
+              JSON.stringify(updatedGameState)
+            );
+          } catch (error) {
+            console.error("Error generating settings transition:", error);
+            // Log more detailed error information
+            if (error instanceof Error) {
+              console.error("Error details:", {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
+              });
+            }
+
+            // If there's an error, create a basic transition narrative without API
+            const fallbackNarrative = `As you blink, the world around you shifts dramatically. The environment transforms to match your new journey in ${
+              settings.universe.type
+            } with a ${settings.background.mood} atmosphere. ${
+              settings.universe.description.split(".")[0]
+            }`;
+
+            const updatedGameState = {
+              ...gameState,
+              settings: settings,
+              narrative: fallbackNarrative,
+              loading: false,
+              timestamp: new Date().getTime(),
+            };
+            setGameState(updatedGameState);
+            localStorage.setItem(
+              GAME_STATE_KEY,
+              JSON.stringify(updatedGameState)
+            );
+          }
+        } else {
+          // If settings haven't changed, just update the state
+          const updatedGameState = {
+            ...gameState,
+            settings: settings,
+          };
+          setGameState(updatedGameState);
+          localStorage.setItem(
+            GAME_STATE_KEY,
+            JSON.stringify(updatedGameState)
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Unhandled error in handleStartGame:", error);
+
+      // Ensure we still update the settings even if something fails
+      const updatedGameState = {
+        ...gameState,
+        settings: settings,
+        loading: false,
+      };
+      setGameState(updatedGameState);
+      localStorage.setItem(GAME_STATE_KEY, JSON.stringify(updatedGameState));
+    } finally {
+      // Always ensure loading state is reset
+      setIsLoading(false);
+
+      // Always ensure we redirect back to the game page
+      router.push("/");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0f0f1e] to-[#1a1a2e] text-white">
       {/* Animated background elements */}
@@ -333,15 +449,7 @@ function SettingsPage() {
                     <select
                       className="w-full p-4 rounded-xl border border-white/10 bg-black/40 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all hover:bg-black/50"
                       value={settings.universe.type}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          universe: {
-                            ...settings.universe,
-                            type: e.target.value,
-                          },
-                        })
-                      }
+                      onChange={handleUniverseTypeChange}
                     >
                       <option value="fantasy">Fantasy World</option>
                       <option value="sci-fi">Science Fiction</option>
@@ -377,16 +485,14 @@ function SettingsPage() {
                     className="w-full p-4 rounded-xl border border-white/10 bg-black/40 text-white min-h-[150px] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none hover:bg-black/50"
                     placeholder="Describe your game world..."
                     value={settings.universe.description}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        universe: {
-                          ...settings.universe,
-                          description: e.target.value,
-                        },
-                      })
-                    }
+                    onChange={handleCustomDescriptionChange}
                   />
+                  {settings.universe.preset === "Custom" && (
+                    <p className="mt-2 text-sm text-indigo-300">
+                      <span className="inline-block mr-2">✨</span>
+                      Using custom universe description
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -407,6 +513,11 @@ function SettingsPage() {
                         {preset.name}
                       </button>
                     ))}
+                    {settings.universe.preset === "Custom" && (
+                      <button className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-purple-700/30 scale-105 px-5 py-3 rounded-xl text-sm transition-all">
+                        Custom
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -705,23 +816,61 @@ function SettingsPage() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10 mb-8">
           <button
-            className="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-lg font-bold rounded-xl transform transition-all hover:translate-y-[-2px] shadow-lg shadow-purple-600/30 overflow-hidden"
+            className={`group relative px-8 py-4 ${
+              isLoading
+                ? "bg-gray-600"
+                : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:translate-y-[-2px]"
+            } text-white text-lg font-bold rounded-xl transform transition-all shadow-lg shadow-purple-600/30 overflow-hidden`}
             onClick={handleStartGame}
+            disabled={isLoading}
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
-              <Wand2
-                size={20}
-                className="group-hover:rotate-12 transition-transform"
-              />
-              {isNewGame ? "Begin Your Adventure" : "Apply & Return to Game"}
+              {isLoading ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Wand2
+                    size={20}
+                    className="group-hover:rotate-12 transition-transform"
+                  />
+                  {isNewGame
+                    ? "Begin Your Adventure"
+                    : "Apply & Return to Game"}
+                </>
+              )}
             </span>
-            <span className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+            {!isLoading && (
+              <span className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+            )}
           </button>
 
           {!isNewGame && (
             <button
               className="px-8 py-4 border border-purple-500/30 hover:border-purple-500/60 hover:bg-purple-500/10 text-white text-lg font-bold rounded-xl transform transition-all hover:translate-y-[-2px]"
               onClick={() => router.push("/")}
+              disabled={isLoading}
             >
               Return Without Changes
             </button>
