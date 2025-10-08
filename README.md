@@ -1,6 +1,6 @@
-# StoryQuest: AI-Powered Interactive Storytelling
+# AI Visual Novel: AI-Powered Interactive Storytelling
 
-StoryQuest is an immersive visual novel experience that combines AI-generated narrative, dynamic character emotions, and rich background scenes to create unique interactive stories based on player input.
+AI Visual Novel is an immersive visual novel experience that combines AI-generated narrative, dynamic character emotions, and rich background scenes to create unique interactive stories based on player input.
 
 ## Features
 
@@ -46,8 +46,8 @@ StoryQuest is an immersive visual novel experience that combines AI-generated na
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/storyquest.git
-   cd storyquest
+   git clone https://github.com/gladdydev/ai-visual-novel.git
+   cd ai-visual-novel
    ```
 
 2. Install dependencies:
